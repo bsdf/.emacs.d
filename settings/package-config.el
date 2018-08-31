@@ -26,18 +26,27 @@
 (use-package eshell
   :commands eshell
   :hook
-  (eshell-mode . (lambda ()
-                   (require 'em-tramp)
-                   (add-to-list 'eshell-modules-list 'eshell-tramp)
-                   (eshell-cmpl-initialize)
+  (eshell-mode . my-eshell-setup)
 
-                   (bind-keys :map eshell-mode-map
-                              ([remap eshell-pcomplete] . completion-at-point)
-                              ("C-c M-O" . (lambda () (interactive)
-                                             (eshell/clear t)
-                                             (eshell-reset))))))
+  :init
+  (defun my-eshell-setup ()
+    (require 'em-tramp)
+    (add-to-list 'eshell-modules-list 'eshell-tramp)
+    (eshell-cmpl-initialize)
 
+    (bind-keys :map eshell-mode-map
+               ([remap eshell-pcomplete] . completion-at-point)
+               ("C-c M-O" . (lambda () (interactive)
+                              (eshell/clear t)
+                              (eshell-reset))))
+    (setq-local ivy-display-functions-alist
+                (remq (assoc 'ivy-completion-in-region ivy-display-functions-alist)
+                      ivy-display-functions-alist)))
+  
   :config
+  (use-package esh-autosuggest
+    :hook (eshell-mode . esh-autosuggest-mode))
+
   (setq password-cache               t
         password-cache-expiry        3600
         ping-program-options         '("-c" "4")
