@@ -187,7 +187,6 @@
         web-mode-enable-auto-quoting nil))
 
 (use-package js2-mode
-  :pin melpa-stable
   :mode "\\.js\\'")
 
 (use-package json-mode
@@ -242,7 +241,6 @@
   )
 
 (use-package yasnippet
-  :pin melpa-stable
   :diminish 'yas-minor-mode
   :config
   (yas-global-mode 1))
@@ -386,7 +384,6 @@
   :mode "\\.go\\'")
 
 (use-package scala-mode
-  :pin melpa-stable
   :mode "\\.scala\\'"
   :config
   (use-package ensime
@@ -490,7 +487,6 @@
     ))
 
 (use-package cider
-  :pin melpa-stable
   :bind (:map cider-repl-mode-map
          ("C-c M-O" . cider-repl-clear-buffer))
   :config
