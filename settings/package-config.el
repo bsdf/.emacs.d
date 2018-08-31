@@ -589,9 +589,12 @@
 
 (use-package neotree
   :bind (("<f10>" . neotree-toggle))
+  :hook (neotree-mode . (lambda ()
+                          (visual-line-mode -1)
+                          (toggle-truncate-lines 1)))
   :config
   (use-package all-the-icons)
-  (setq neo-theme             'icons
-        neo-smart-open        t))
+  (setq neo-theme      'icons
+        neo-smart-open t))
 
 (provide 'package-config)
