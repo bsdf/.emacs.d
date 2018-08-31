@@ -20,12 +20,15 @@
 (if (file-exists-p custom-file)
     (load custom-file))
 
-;; install use-package if we don't have it
+;; setup package archives
+(setq package-archives
+      '(("gnu"   . "https://elpa.gnu.org/packages/")
+        ("melpa" . "https://melpa.org/packages/")
+        ("org"   . "https://orgmode.org/elpa/")))
 (package-initialize)
 
+;; and install needed packages if necessary
 (unless package-archive-contents
-  (add-to-list 'package-archives
-               '("melpa" . "https://melpa.org/packages/") t)
   (package-refresh-contents)
   (mapc #'package-install
         '(use-package bind-key diminish)))
