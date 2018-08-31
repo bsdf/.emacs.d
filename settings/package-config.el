@@ -255,7 +255,7 @@
   (yas-global-mode 1))
 
 (use-package exec-path-from-shell
-  :if (not (eq system-type 'windows-nt))
+  :unless (eq system-type 'windows-nt)
   :demand
   :config
   (setq exec-path-from-shell-check-startup-files nil)
