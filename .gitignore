@@ -1,0 +1,7 @@
+/*
+!.gitignore
+!init.el
+!settings
+!site-lisp
+*.elc
+*~
