@@ -11,14 +11,14 @@
       (expand-file-name "settings" user-emacs-directory))
 
 ;; set up load path
-(add-to-list 'load-path site-lisp-dir)
-(add-to-list 'load-path settings-dir)
+(dolist (p '(site-lisp-dir settings-dir))
+  (add-to-list 'load-path (symbol-value p)))
 
 ;; keep emacs custom settings in separate file
-(setq custom-file (expand-file-name (concat "env/" (system-name) ".el")
+(setq custom-file (expand-file-name (format "env/%s.el" system-name)
                                     user-emacs-directory))
-(if (file-exists-p custom-file)
-    (load custom-file))
+(when (file-exists-p custom-file)
+  (load custom-file))
 
 ;; setup package archives
 (setq package-archives

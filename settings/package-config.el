@@ -1,14 +1,13 @@
 ;;; -*- lexical-binding: t -*-
 
 (eval-when-compile
-  (require 'use-package))
+  (require 'use-package)
+  (require 'use-package-hook-star))
+
 (require 'diminish)
 (require 'bind-key)
 
 (setq use-package-always-ensure t)
-
-(use-package diminish)
-(use-package bind-key)
 
 ;; default emac packages
 
@@ -65,7 +64,7 @@
 (use-package magit
   :bind (("C-x g" . magit-status))
   :config
-  (setq magit-log-arguments (quote ("--decorate"))
+  (setq magit-log-arguments '("--decorate")
         magit-auto-revert-mode t
         git-commit-finish-query-functions nil)
 
@@ -74,6 +73,7 @@
                           'magit-insert-unpulled-from-upstream)
 
   (use-package magit-gitflow
+    :diminish magit-gitflow-mode
     :hook (magit-mode . turn-on-magit-gitflow)))
 
 (use-package markdown-mode
@@ -193,7 +193,7 @@
         web-mode-css-indent-offset    2
         web-mode-markup-indent-offset 2
         web-mode-sql-indent-offset    2
-        web-mode-enable-auto-quoting nil))
+        web-mode-enable-auto-quoting  nil))
 
 (use-package js2-mode
   :mode "\\.js\\'")
@@ -214,27 +214,30 @@
   (spaceline-emacs-theme)
   (spaceline-helm-mode))
 
+(setq my-lisp-modes
+      '(clojure-mode
+        emacs-lisp-mode
+        lisp-mode
+        lisp-interaction-mode
+        cider-repl-mode
+        sly-mrepl-mode
+        sly-mode
+        racket-mode
+        racket-repl-mode))
+
 (use-package smartparens
   :diminish smartparens-mode
   :bind (:map smartparens-mode-map
          ("C-M-k"   . sp-kill-sexp)
          ("C-M-SPC" . sp-mark-sexp))
-
-  :hook
-  ((clojure-mode
-    emacs-lisp-mode
-    lisp-mode
-    lisp-interaction-mode
-    cider-repl-mode
-    sly-mrepl-mode
-    sly-mode
-    racket-mode
-    racket-repl-mode) . smartparens-mode)
-
+  :hook* (my-lisp-modes . smartparens-mode)
   :config
   (require 'smartparens-config)
   (sp-use-paredit-bindings)
   (setq-default sp-autoskip-closing-pair 'always))
+
+(use-package rainbow-delimiters
+  :hook* (my-lisp-modes . rainbow-delimiters-mode))
 
 (use-package display-line-numbers
   :hook (prog-mode . display-line-numbers-mode)
@@ -251,12 +254,13 @@
 
 (use-package yasnippet
   :diminish 'yas-minor-mode
+  :defer 5
   :config
   (yas-global-mode 1))
 
 (use-package exec-path-from-shell
   :unless (eq system-type 'windows-nt)
-  :demand
+  :defer 5
   :config
   (setq exec-path-from-shell-check-startup-files nil)
   (exec-path-from-shell-initialize))
@@ -270,12 +274,8 @@
 (use-package macrostep
   :bind (:map emacs-lisp-mode-map
          ("C-c e" . macrostep-expand)
-         :map
-         lisp-interaction-mode-map
+         :map lisp-interaction-mode-map
          ("C-c e" . macrostep-expand)))
-
-(use-package rainbow-delimiters
-  :hook ((clojure-mode emacs-lisp-mode lisp-mode lisp-interaction-mode) . rainbow-delimiters-mode))
 
 (use-package org
   :ensure org-plus-contrib
