@@ -13,10 +13,13 @@
 
 (use-package dired
   :ensure nil
+  :diminish dired-omit-mode
   :bind (("C-c C-j" . dired-jump))
   :hook ((dired-load . (lambda () (load "dired-x")))
          (dired-mode . (lambda () (dired-omit-mode t))))
-  :init (require 'dired-x))
+  :init (require 'dired-x)
+  :config
+  (setq dired-omit-verbose nil))
 
 (use-package man
   :config
@@ -343,7 +346,9 @@
   (global-hl-line-mode))
 
 (use-package async
+  :diminish dired-async-mode
   :config
+  (dired-async-mode 1)
   (async-bytecomp-package-mode 1)
   (setq async-bytecomp-allowed-packages '(all)))
 
