@@ -9,6 +9,12 @@
 
 (setq use-package-always-ensure t)
 
+;; uncomment to enable profiling
+;; (progn
+;;   (setq use-package-compute-statistics t)
+;;   (require 'use-package)
+;;   (require 'use-package-hook-star))
+
 ;; default emac packages
 
 (use-package dired
@@ -20,10 +26,6 @@
   :init (require 'dired-x)
   :config
   (setq dired-omit-verbose nil))
-
-(use-package man
-  :config
-  (setq Man-notify-method 'pushy))
 
 (use-package eshell
   :commands eshell
@@ -55,7 +57,8 @@
         eshell-prefer-lisp-functions t
         eshell-prefer-lisp-variables t
         eshell-hist-ignoredups       t
-        eshell-save-history-on-exit  t))
+        eshell-save-history-on-exit  t
+        Man-notify-method            'pushy))
 
 ;; third party packages
 
@@ -88,31 +91,29 @@
   :demand
   :diminish ivy-mode
   :bind (("C-c C-r" . ivy-resume)
-         ("<f6>" . ivy-resume)
-         :map minibuffer-local-map
-         ("C-r" . counsel-minibuffer-history))
+         ("<f6>"    . ivy-resume))
   :config
-  (use-package counsel
-    :bind (("M-x"     . counsel-M-x)
-           ("C-x C-j" . counsel-M-x)
-           ("C-x C-f" . counsel-find-file)
-           ("<f1> f"  . counsel-describe-function)
-           ("<f1> v"  . counsel-describe-variable)
-           ("<f1> l"  . counsel-find-library)
-           ("<f2> i"  . counsel-info-lookup-symbol)
-           ("<f2> u"  . counsel-unicode-char)
-           ("C-c g"   . counsel-git)
-           ("C-c j"   . counsel-git-grep)
-           ("C-c k"   . counsel-ag)
-           ("C-x l"   . counsel-locate)))
-
   (ivy-mode 1)
-  (setq ivy-use-virtual-buffers t
-        enable-recursive-minibuffers t
-        projectile-completion-system 'ivy
-        projectile-switch-project-action #'projectile-find-file
-        magit-completing-read-function 'ivy-completing-read
-        ivy-extra-directories '()))
+  (setq
+   ivy-use-virtual-buffers          t
+   enable-recursive-minibuffers     t
+   projectile-completion-system     'ivy
+   projectile-switch-project-action #'projectile-find-file
+   magit-completing-read-function   'ivy-completing-read
+   ivy-extra-directories            '()))
+
+(use-package counsel
+  :after ivy
+  :diminish counsel-mode
+  :bind (("<f2> u"  . counsel-unicode-char)
+         ("C-c g"   . counsel-git)
+         ("C-c j"   . counsel-git-grep)
+         ("C-c k"   . counsel-ag)
+         ("C-x l"   . counsel-locate)
+         :map minibuffer-local-map
+         ("C-r"     . counsel-minibuffer-history))
+  :config
+  (counsel-mode 1))
 
 ;; (use-package helm
 ;;   :demand
@@ -245,20 +246,13 @@
 (use-package display-line-numbers
   :hook (prog-mode . display-line-numbers-mode)
   :config
-  (global-display-line-numbers-mode -1)
-  ;; (global-display-line-numbers-mode)
-  ;; (my/add-to-hooks (lambda ()
-  ;;                    (display-line-numbers-mode -1))
-  ;;                  custom-mode-hook
-  ;;                  eshell-mode-hook
-  ;;                  cider-repl-mode-hook
-  ;;                  neotree-mode-hook)
-  )
+  (global-display-line-numbers-mode -1))
 
 (use-package yasnippet
   :diminish 'yas-minor-mode
   :defer 5
   :config
+  (setq yas-verbosity 2)
   (yas-global-mode 1))
 
 (use-package exec-path-from-shell
@@ -307,31 +301,20 @@
                              (setq word-wrap t)))
 
 
-  (setq org-capture-templates '(("t" "Todo [inbox]" entry
-                                 (file+headline "~/org/gtd/inbox.org" "Tasks")
-                                 "* TODO %i%?")
-                                ("T" "Tickler" entry
-                                 (file+headline "~/org/gtd/tickler.org" "Tickler")
-                                 "* %i%? \n %U")))
+  (setq org-capture-templates
+        '(("t" "Todo [inbox]" entry
+           (file+headline "~/org/gtd/inbox.org" "Tasks")
+           "* TODO %i%?")
+          ("T" "Tickler" entry
+           (file+headline "~/org/gtd/tickler.org" "Tickler")
+           "* %i%? \n %U")))
 
   (setq org-refile-targets '(("~/org/gtd/gtd.org"     :maxlevel . 3)
                              ("~/org/gtd/someday.org" :maxlevel . 1)
                              ("~/org/gtd/tickler.org" :maxlevel . 2)))
 
-  (setq org-todo-keywords '((sequence "TODO(t)" "WAITING(w)" "|" "DONE(d)" "CANCELLED(c)")))
-
-
-  ;; (setq org-default-notes-file (expand-file-name "~/.emacs.d/org/notes.org"))
-  ;; (setq org-capture-templates
-  ;;       '(("t" "TODO" entry (file+headline "~/.emacs.d/org/notes.org" "Tasks")
-  ;;          "* TODO %?\n  %i\n")
-  ;;         ("j" "Journal Entry" entry (file+datetree "~/.emacs.d/org/journal.org")
-  ;;          "* %?\n%U\n  %i\n")
-  ;;         ("w" "Work Task" entry (file+headline "~/.emacs.d/org/work_tasks.org" "Tasks")
-  ;;          "* TODO %?\n  %i\n  %T")
-  ;;         ("c" "Note" entry (file+headline "~/.emacs.d/org/notes.org" "Notes")
-  ;;          "* %?\n  %i\n")
-  ;;         ))
+  (setq org-todo-keywords
+        '((sequence "TODO(t)" "WAITING(w)" "|" "DONE(d)" "CANCELLED(c)")))
 
   (setq org-startup-indented     t
         org-startup-truncated    nil
@@ -346,6 +329,7 @@
   (global-hl-line-mode))
 
 (use-package async
+  :defer 2
   :diminish dired-async-mode
   :config
   (dired-async-mode 1)
@@ -354,6 +338,7 @@
 
 (use-package editorconfig
   :diminish 'editorconfig-mode
+  :defer 5
   :config
   (editorconfig-mode 1))
 
@@ -390,6 +375,7 @@
   (global-company-mode))
 
 (use-package flycheck
+  :commands flycheck-mode
   :diminish flycheck-mode
   ;; :config
   ;; (global-flycheck-mode)
@@ -431,10 +417,7 @@
   :mode "\\.elm\\'"
   :config
   (use-package flycheck-elm
-    :hook (flycheck-mode . flycheck-elm-setup)
-    ;; :config
-    ;; (add-hook 'flycheck-mode-hook #'flycheck-elm-setup)
-    )
+    :hook (flycheck-mode . flycheck-elm-setup))
 
   (add-to-list 'company-backends 'company-elm))
 
@@ -497,9 +480,7 @@
   (use-package flycheck-dogma
     :hook (elixir-mode . flycheck-mode)
     :config
-    (eval-after-load 'flycheck '(flycheck-dogma-setup))
-    ;; (add-hook 'elixir-mode-hook 'flycheck-mode)
-    ))
+    (eval-after-load 'flycheck '(flycheck-dogma-setup))))
 
 (use-package cider
   :bind (:map cider-repl-mode-map
@@ -550,6 +531,7 @@
   (setq anaconda-mode-installation-directory "~/.elpa/anaconda-mode"))
 
 (use-package tuareg
+  :mode "\\.ml[iylp]?\\'"
   :config
   (use-package merlin
     :diminish 'merlin-mode
