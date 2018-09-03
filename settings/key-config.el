@@ -1,5 +1,6 @@
 ;; keys
 (bind-keys
+ ("C-x C-j" . execute-extended-command)
  ("C-x C-g" . keyboard-quit)
  ("C-c C-g" . keyboard-quit)
  ("C-c C-c" . keyboard-quit)
