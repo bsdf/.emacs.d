@@ -102,14 +102,10 @@
 ;; don't suggest shorted M-x invocations
 (setq extended-command-suggest-shorter nil)
 
-;;; EXPERIMENTAL
-
-(bind-keys ("C-s"   . isearch-forward-regexp)
-           ("C-r"   . isearch-backward-regexp)
-           ("C-M-s" . isearch-forward)
-           ("C-M-r" . isearch-backward))
-
+;; apropos should search everything
 (setq apropos-do-all t)
+
+;; prefer newer versions of .el code
 (setq load-prefer-newer t)
 
 (provide 'sane-defaults)

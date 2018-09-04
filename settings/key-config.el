@@ -1,6 +1,10 @@
 ;; keys
 (bind-keys
  ("C-x C-j" . execute-extended-command)
+ ("C-s"     . isearch-forward-regexp)
+ ("C-r"     . isearch-backward-regexp)
+ ("C-M-s"   . isearch-forward)
+ ("C-M-r"   . isearch-backward)
  ("C-x C-g" . keyboard-quit)
  ("C-c C-g" . keyboard-quit)
  ("C-c C-c" . keyboard-quit)
