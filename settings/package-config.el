@@ -278,6 +278,7 @@
 
 (use-package org
   :ensure org-plus-contrib
+  :diminish org-indent-mode
   :bind (("C-c l" . org-store-link)
          ("C-c c" . org-capture)
          ("C-c a" . org-agenda)

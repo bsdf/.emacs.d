@@ -96,6 +96,8 @@
 ;; use a less dumbass regex syntax
 (setq reb-re-syntax 'string)
 
+;; don't use vc.el
+(setq vc-handled-backends nil)
 
 ;;; EXPERIMENTAL
 
