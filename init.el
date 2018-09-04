@@ -15,7 +15,7 @@
   (add-to-list 'load-path (symbol-value p)))
 
 ;; keep emacs custom settings in separate file
-(setq custom-file (expand-file-name (format "env/%s.el" system-name)
+(setq custom-file (expand-file-name (format "env/%s.el" (system-name))
                                     user-emacs-directory))
 (when (file-exists-p custom-file)
   (load custom-file))
