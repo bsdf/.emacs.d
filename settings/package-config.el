@@ -531,7 +531,7 @@
   (setq anaconda-mode-installation-directory "~/.elpa/anaconda-mode"))
 
 (use-package tuareg
-  :mode "\\.ml[iylp]?\\'"
+  :mode ("\\.ml[iylp]?\\'" . tuareg-mode)
   :config
   (use-package merlin
     :diminish 'merlin-mode
