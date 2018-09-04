@@ -29,6 +29,7 @@
 
 (use-package eshell
   :commands eshell
+  :functions eshell-cmpl-initialize
   :hook
   (eshell-mode . my-eshell-setup)
 
@@ -90,6 +91,7 @@
 (use-package ivy
   :demand
   :diminish ivy-mode
+  :functions ivy-mode
   :bind (("C-c C-r" . ivy-resume)
          ("<f6>"    . ivy-resume))
   :config
@@ -358,6 +360,8 @@
 
 (use-package sly
   :commands sly
+  :defines sly-mrepl-mode-map
+  :functions (sly-mrepl-mode sly-mrepl-clear-repl)
   :config
   (setq
    sly-complete-symbol-function #'sly-simple-completions
@@ -465,7 +469,6 @@
                 (edts-mode)
                 ;; (auto-complete-mode)
                 ;; (edts-complete-setup)
-                (eproject-maybe-turn-on)
                 (company-mode 0))))
 
   (let ((man-dir "~/.elpa/edts/doc/20.0"))
@@ -548,7 +551,7 @@
   :mode ("\\.ml[iylp]?\\'" . tuareg-mode)
   :config
   (use-package merlin
-    :diminish 'merlin-mode
+    :diminish merlin-mode
     :config (setq merlin-ac-setup t))
 
   (use-package utop
