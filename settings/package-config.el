@@ -115,6 +115,17 @@
   :config
   (counsel-mode 1))
 
+(use-package prescient
+  :after (ivy company)
+  :config
+  (prescient-persist-mode +1)
+  (use-package ivy-prescient
+    :config
+    (ivy-prescient-mode +1))
+  (use-package company-prescient
+    :config
+    (company-prescient-mode +1)))
+
 ;; (use-package helm
 ;;   :demand
 ;;   :bind (("C-c h"   . helm-command-prefix)
