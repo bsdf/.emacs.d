@@ -99,6 +99,9 @@
 ;; don't use vc.el
 (setq vc-handled-backends nil)
 
+;; don't suggest shorted M-x invocations
+(setq extended-command-suggest-shorter nil)
+
 ;;; EXPERIMENTAL
 
 (bind-keys ("C-s"   . isearch-forward-regexp)
