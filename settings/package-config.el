@@ -169,23 +169,25 @@
 (use-package projectile
   :bind-keymap ("C-c p" . projectile-command-map)
   :config
-  (use-package ag
-    ;; :bind (:map projectile-command-map
-    ;;        ("a"   . helm-projectile-ag)
-    ;;        ("s s" . helm-projectile-ag))
-    )
-  (setq projectile-enable-caching    nil
-        projectile-mode-line         '(:eval (format " [%s]" (projectile-project-name)))
+  (setq
+   projectile-enable-caching    nil
+   projectile-mode-line         '(:eval (format " [%s]" (projectile-project-name)))
 
-        ;; projectile-completion-system 'helm
-        ;; projectile-switch-project-action 'helm-projectile
-        projectile-known-projects-file "~/.elpa/projectile-bookmarks.eld"
-        projectile-cache-file          "~/.elpa/projectile.cache"
-        )
+   ;; projectile-completion-system 'helm
+   ;; projectile-switch-project-action 'helm-projectile
+   projectile-known-projects-file "~/.elpa/projectile-bookmarks.eld"
+   projectile-cache-file          "~/.elpa/projectile.cache")
 
   (add-to-list 'projectile-globally-ignored-directories "node_modules")
   (add-to-list 'projectile-project-root-files ".projectile")
   (projectile-mode +1))
+
+(use-package ag
+  :defer 5
+  ;; :bind (:map projectile-command-map
+  ;;        ("a"   . helm-projectile-ag)
+  ;;        ("s s" . helm-projectile-ag))
+  )
 
 (use-package web-mode
   :mode ("\\.jsx\\'"
@@ -215,8 +217,8 @@
   (setq powerline-default-separator   'wave
         spaceline-highlight-face-func #'spaceline-highlight-face-default)
 
-  (spaceline-emacs-theme)
-  (spaceline-helm-mode))
+  ;; (spaceline-helm-mode)
+  (spaceline-emacs-theme))
 
 (setq my-lisp-modes
       '(clojure-mode
@@ -337,7 +339,7 @@
   (setq async-bytecomp-allowed-packages '(all)))
 
 (use-package editorconfig
-  :diminish 'editorconfig-mode
+  :diminish editorconfig-mode
   :defer 5
   :config
   (editorconfig-mode 1))
@@ -359,8 +361,8 @@
 
 (use-package company
   :demand
-  :diminish 'company-mode
-  :diminish 'global-company-mode
+  :diminish company-mode
+  :diminish global-company-mode
   :bind (("C-\\" . company-complete)
          :map company-active-map
          ("C-n" . company-select-next)
