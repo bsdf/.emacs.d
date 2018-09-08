@@ -61,6 +61,11 @@
         eshell-save-history-on-exit  t
         Man-notify-method            'pushy))
 
+(use-package display-line-numbers
+  :hook ((prog-mode nxml-mode) . display-line-numbers-mode)
+  :config
+  (global-display-line-numbers-mode -1))
+
 ;; third party packages
 
 (use-package color-theme-sanityinc-tomorrow
@@ -257,11 +262,6 @@
 
 (use-package rainbow-delimiters
   :hook* (my-lisp-modes . rainbow-delimiters-mode))
-
-(use-package display-line-numbers
-  :hook (prog-mode . display-line-numbers-mode)
-  :config
-  (global-display-line-numbers-mode -1))
 
 (use-package yasnippet
   :diminish 'yas-minor-mode
