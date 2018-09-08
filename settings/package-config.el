@@ -612,4 +612,10 @@
   (setq neo-theme      'icons
         neo-smart-open t))
 
+(use-package unkillable-scratch
+  :defer 2
+  :config
+  (setq unkillable-scratch-behavior 'bury)
+  (unkillable-scratch))
+
 (provide 'package-config)
