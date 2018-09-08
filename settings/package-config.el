@@ -247,7 +247,8 @@
         sly-mrepl-mode
         sly-mode
         racket-mode
-        racket-repl-mode))
+        racket-repl-mode
+        ielm-mode))
 
 (use-package smartparens
   :diminish smartparens-mode
