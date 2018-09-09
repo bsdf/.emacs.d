@@ -233,12 +233,9 @@
 (use-package spaceline
   :demand
   :config
-  (require 'spaceline-config)
   (setq powerline-default-separator   'wave
         spaceline-highlight-face-func #'spaceline-highlight-face-default)
-
-  ;; (spaceline-helm-mode)
-  (spaceline-emacs-theme))
+  (require 'my-spaceline-config))
 
 (setq my-lisp-modes
       '(clojure-mode
