@@ -1,6 +1,7 @@
 ;;; -*- lexical-binding: t -*-
 
 (eval-when-compile
+  (setq use-package-compute-statistics nil)
   (require 'use-package)
   (require 'use-package-hook-star))
 
