@@ -598,8 +598,6 @@
 
   (rtags-enable-standard-keybindings))
 
-;; (use-package eglot)
-
 (use-package racket-mode
   :mode "\\.rkt\\'")
 
@@ -627,5 +625,20 @@
   :commands vlf
   :config
   (require 'vlf-setup))
+
+(use-package lsp-java
+  :hook (java-mode . lsp-java-enable)
+  :config
+  (use-package lsp-ui
+    :hook ((lsp-mode  . lsp-ui-mode)
+           (java-mode . flycheck-mode))
+    :config
+    (setq lsp-ui-flycheck-enable t
+          lsp-ui-sideline-enable nil
+          lsp-ui-doc-enable      nil))
+  (setq lsp-inhibit-message t))
+
+(use-package eglot
+  :commands eglot)
 
 (provide 'package-config)
