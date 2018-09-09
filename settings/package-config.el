@@ -1,7 +1,8 @@
 ;;; -*- lexical-binding: t -*-
 
 (eval-when-compile
-  (setq use-package-compute-statistics nil)
+  (when (boundp 'use-package-compute-statistics)
+    (setq use-package-compute-statistics nil))
   (require 'use-package)
   (require 'use-package-hook-star))
 
@@ -457,6 +458,7 @@
          ("C-c C-g" . erlang-shell/send-C-g))
   :config
   (use-package edts
+    :defines ac-mode-map
     :bind (:map ac-mode-map
            ("C-\\" . auto-complete))
 
@@ -465,9 +467,9 @@
     :diminish eproject-mode
 
     :config
-    (require 'edts-start)
     (add-hook 'erlang-mode-hook
               (lambda ()
+                (require 'edts-start)
                 (edts-mode)
                 ;; (auto-complete-mode)
                 ;; (edts-complete-setup)
@@ -552,12 +554,16 @@
 (use-package tuareg
   :mode ("\\.ml[iylp]?\\'" . tuareg-mode)
   :config
+  (electric-indent-mode 0)
+
   (use-package merlin
     :diminish merlin-mode
+    :hook ((tuareg-mode reason-mode) . merlin-mode)
     :config (setq merlin-ac-setup t))
 
   (use-package utop
     :diminish 'utop-minor-mode
+    :hook ((tuareg-mode reason-mode) . utop-minor-mode)
     :config
     (setq utop-edit-command t
           utop-command "opam config exec -- utop -emacs")
@@ -570,18 +576,22 @@
                      utop-minor-mode))
 
   (use-package reason-mode
+    :commands reason-mode
     :config
-    (add-hook 'reason-mode-hook
-              (lambda ()
-                (add-hook 'before-save-hook 'refmt-before-save)
-                (utop-minor-mode)
-                (merlin-mode))))
+    (add-hook 'before-save-hook 'refmt-before-save)
+    ;; (add-hook 'reason-mode-hook
+    ;;           (lambda ()
+    ;;             (add-hook 'before-save-hook 'refmt-before-save)
+    ;;             (utop-minor-mode)
+    ;;             (merlin-mode)))
+    )
 
-  (add-hook 'tuareg-mode-hook
-            (lambda ()
-              (merlin-mode)
-              (utop-minor-mode)
-              (electric-indent-mode 0))))
+  ;; (add-hook 'tuareg-mode-hook
+  ;;           (lambda ()
+  ;;             (merlin-mode)
+  ;;             (utop-minor-mode)
+  ;;             (electric-indent-mode 0)))
+  )
 
 (use-package rtags
   :hook ((c-mode c++-mode) . rtags-start-process-unless-running)
