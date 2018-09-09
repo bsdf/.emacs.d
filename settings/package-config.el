@@ -32,9 +32,7 @@
 (use-package eshell
   :commands eshell
   :functions eshell-cmpl-initialize
-  :hook
-  (eshell-mode . my-eshell-setup)
-
+  :hook (eshell-mode . my-eshell-setup)
   :init
   (defun my-eshell-setup ()
     (require 'em-tramp)
@@ -77,7 +75,9 @@
 
 (use-package magit
   :bind (("C-x g" . magit-status))
+  :defer 2
   :config
+  (global-magit-file-mode +1)
   (setq magit-log-arguments '("--decorate")
         magit-auto-revert-mode t
         git-commit-finish-query-functions nil)
@@ -650,5 +650,11 @@
 
 (use-package eglot
   :commands eglot)
+
+(use-package diff-hl
+  :unless (eq system-type 'windows-nt)
+  :config
+  (global-diff-hl-mode  +1)
+  (diff-hl-flydiff-mode +1))
 
 (provide 'package-config)

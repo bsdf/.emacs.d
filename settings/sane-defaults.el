@@ -96,8 +96,9 @@
 ;; use a less dumbass regex syntax
 (setq reb-re-syntax 'string)
 
-;; don't use vc.el
-(setq vc-handled-backends nil)
+;; don't use vc.el on windows-nt
+(when (eq system-type 'windows-nt)
+  (setq vc-handled-backends nil))
 
 ;; don't suggest shorted M-x invocations
 (setq extended-command-suggest-shorter nil)
