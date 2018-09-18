@@ -66,6 +66,13 @@
   :config
   (global-display-line-numbers-mode -1))
 
+(use-package gnus
+  :commands gnus
+  :config
+  (setq gnus-select-method
+        '(nnimap "imap.fastmail.com"
+                 (nnimap-stream ssl))))
+
 ;; third party packages
 
 (use-package color-theme-sanityinc-tomorrow
@@ -593,17 +600,23 @@
 (use-package rtags
   :hook ((c-mode c++-mode) . rtags-start-process-unless-running)
   :config
-  (use-package company-rtags
+  (use-package flycheck-rtags
+    :after rtags
     :config
-    (push 'company-rtags company-backends)
-    (setq rtags-autostart-diagnostics t
-          rtags-completions-enabled t))
+    (require 'flycheck-rtags)
+    (flycheck-mode))
+  (use-package company-rtags
+    :after rtags
+    :config
+    (push 'company-rtags company-backends))
 
-  (use-package modern-cpp-font-lock
-    :diminish modern-c++-font-lock-mode
-    :hook (c++-mode . modern-c++-font-lock-mode))
+  ;; (use-package modern-cpp-font-lock
+  ;;   :diminish modern-c++-font-lock-mode
+  ;;   :hook (c++-mode . modern-c++-font-lock-mode))
 
-  (rtags-enable-standard-keybindings))
+  (rtags-enable-standard-keybindings)
+  (setq rtags-autostart-diagnostics nil
+        rtags-completions-enabled t))
 
 (use-package racket-mode
   :mode "\\.rkt\\'")
