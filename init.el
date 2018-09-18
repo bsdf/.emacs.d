@@ -21,7 +21,8 @@
   (load custom-file))
 
 ;; setup package archives
-(setq package-archives
+(setq package-user-dir "~/.elpa"
+      package-archives
       '(("gnu"   . "https://elpa.gnu.org/packages/")
         ("melpa" . "https://melpa.org/packages/")
         ("org"   . "https://orgmode.org/elpa/")))

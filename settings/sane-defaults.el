@@ -54,6 +54,7 @@
       `((".*" . ,temporary-file-directory)))
 (setq auto-save-file-name-transforms
       `((".*" ,temporary-file-directory t)))
+(setq auto-save-list-file-prefix "~/.elpa/auto-save-list/.saves-")
 
 ;; UTF-8
 (setq locale-coding-system 'utf-8)
