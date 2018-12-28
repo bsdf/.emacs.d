@@ -73,6 +73,26 @@
         '(nnimap "imap.fastmail.com"
                  (nnimap-stream ssl))))
 
+(use-package gud
+  :commands gdb
+  :config
+  (setq gdb-show-main t
+        gdb-display-io-nopopup t))
+
+(use-package tramp
+  :config
+  (add-to-list 'backup-directory-alist
+               (cons tramp-file-name-regexp nil))
+
+  (setq vc-ignore-dir-regexp
+        (format "\\(%s\\)\\|\\(%s\\)"
+                vc-ignore-dir-regexp
+                tramp-file-name-regexp))
+
+  (setq tramp-default-method        "ssh"
+        tramp-persistency-file-name "~/.elpa/tramp"
+        password-cache-expiry       600))
+
 ;; third party packages
 
 (use-package color-theme-sanityinc-tomorrow
@@ -120,6 +140,7 @@
 
 (use-package counsel
   :after ivy
+  :demand
   :diminish counsel-mode
   :bind (("<f2> u"  . counsel-unicode-char)
          ("C-c g"   . counsel-git)
@@ -235,7 +256,10 @@
   :mode ("\\.eslintrc\\'"
          "\\.json\\'"
          "\\.avsc\\'"
-         "\\.avro\\'"))
+         "\\.avro\\'")
+  :config
+  (setq json-reformat:indent-width 2
+        js-indent-level            2))
 
 (use-package spaceline
   :demand
@@ -272,8 +296,10 @@
 
 (use-package yasnippet
   :diminish 'yas-minor-mode
-  :defer 5
+  :defer 2
   :config
+  (use-package yasnippet-snippets
+    :after yasnippet)
   (setq yas-verbosity 2)
   (yas-global-mode 1))
 
@@ -284,11 +310,11 @@
   (setq exec-path-from-shell-check-startup-files nil)
   (exec-path-from-shell-initialize))
 
-(use-package ace-jump-mode
-  :bind (("C-c SPC" . ace-jump-mode)))
+;; (use-package ace-jump-mode
+;;   :bind (("C-c SPC" . ace-jump-mode)))
 
-(use-package ace-window
-  :bind (("M-p" . ace-window)))
+;; (use-package ace-window
+;;   :bind (("M-p" . ace-window)))
 
 (use-package macrostep
   :bind (:map emacs-lisp-mode-map
@@ -666,5 +692,17 @@
   :config
   (global-diff-hl-mode  +1)
   (diff-hl-flydiff-mode +1))
+
+(use-package rust-mode
+  :mode "\\.rs\\'"
+  :config
+  (use-package racer
+    :diminish racer-mode
+    :hook ((rust-mode . racer-mode)
+           (rust-mode . eldoc-mode)))
+  (use-package flycheck-rust
+    :hook (rust-mode . (lambda ()
+                         (flycheck-mode 1)
+                         (flycheck-rust-setup)))))
 
 (provide 'package-config)
