@@ -84,6 +84,11 @@
   (add-to-list 'backup-directory-alist
                (cons tramp-file-name-regexp nil))
 
+  (defun tramp-clean ()
+    (interactive)
+    (tramp-cleanup-all-buffers)
+    (tramp-cleanup-all-connections))
+
   (setq vc-ignore-dir-regexp
         (format "\\(%s\\)\\|\\(%s\\)"
                 vc-ignore-dir-regexp
@@ -696,10 +701,17 @@
 (use-package rust-mode
   :mode "\\.rs\\'"
   :config
+  (let ((cargo-bin (expand-file-name "~/.cargo/bin/")))
+    (add-to-list 'exec-path cargo-bin)
+    (setenv "PATH" (concat (getenv "PATH") ":" cargo-bin)))
+
   (use-package racer
     :diminish racer-mode
     :hook ((rust-mode . racer-mode)
-           (rust-mode . eldoc-mode)))
+           (rust-mode . eldoc-mode))
+    :config
+    ;; (setq racer-rust-src-path "~/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/src")
+    )
   (use-package flycheck-rust
     :hook (rust-mode . (lambda ()
                          (flycheck-mode 1)
