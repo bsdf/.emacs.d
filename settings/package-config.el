@@ -98,6 +98,16 @@
         tramp-persistency-file-name "~/.elpa/tramp"
         password-cache-expiry       600))
 
+(use-package hexl
+  :commands (hexl-mode hexl-find-file)
+  :config
+  (defadvice hexl-save-buffer (around hexl-save-point
+                                      activate compile)
+    "save the point position when saving in hexl"
+    (let ((p (point)))
+      ad-do-it
+      (goto-char p))))
+
 ;; third party packages
 
 (use-package color-theme-sanityinc-tomorrow
@@ -346,6 +356,13 @@
    '((shell . t)
      (js . t)
      (emacs-lisp . t)))
+
+  (setq org-babel-results-keyword "results")
+
+  (add-hook 'org-babel-after-execute-hook
+            (lambda ()
+              (when org-inline-image-overlays
+                (org-redisplay-inline-images))))
 
   (defun add-pcomplete-to-capf ()
     (add-hook 'completion-at-point-functions 'pcomplete-completions-at-point nil t))
@@ -716,5 +733,19 @@
     :hook (rust-mode . (lambda ()
                          (flycheck-mode 1)
                          (flycheck-rust-setup)))))
+
+(use-package mmm-mode
+  :defer 2
+  :config
+  (mmm-add-classes
+   '((jenkinsfile-yaml
+      :submode yaml-mode
+      :delimiter-mode nil
+      :front "yml\\s-*=\\s-*\"\"\""
+      :back "\"\"\"")))
+  (mmm-add-mode-ext-class 'groovy-mode "jenkinsfile\\'" 'jenkinsfile-yaml)
+
+  (setq mmm-global-mode 'buffers-with-submode-classes
+        mmm-submode-decoration-level 2))
 
 (provide 'package-config)
