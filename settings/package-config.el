@@ -47,7 +47,7 @@
     (setq-local ivy-display-functions-alist
                 (remq (assoc 'ivy-completion-in-region ivy-display-functions-alist)
                       ivy-display-functions-alist)))
-  
+
   :config
   (use-package esh-autosuggest
     :hook (eshell-mode . esh-autosuggest-mode))
@@ -378,11 +378,38 @@
            "* TODO %i%?")
           ("T" "Tickler" entry
            (file+headline "~/org/gtd/tickler.org" "Tickler")
-           "* %i%? \n %U")))
+           "* %i%? \n %U")
+          ("P" "process-soon" entry
+           (file+headline "todo.org" "Todo")
+           "* TODO %a %?\nDEADLINE: %(org-insert-time-stamp (org-read-date nil t \"+2d\"))")))
 
-  (setq org-refile-targets '(("~/org/gtd/gtd.org"     :maxlevel . 3)
-                             ("~/org/gtd/someday.org" :maxlevel . 1)
+  (setq org-refile-allow-creating-parent-nodes 'confirm)
+  (setq org-refile-targets '(("~/org/gtd/gtd.org"     :maxlevel . 2)
+                             ("~/org/gtd/someday.org" :maxlevel . 2)
                              ("~/org/gtd/tickler.org" :maxlevel . 2)))
+
+  (setq org-agenda-files '("~/org/gtd/gtd.org"
+                           "~/org/gtd/inbox.org"
+                           "~/org/gtd/tickler.org"))
+
+  (setq org-agenda-custom-commands
+        '(;; Contexts
+          ("o" "At the office" tags-todo "@office"
+           ((org-agenda-overriding-header "Office")))
+          ("h" "At home" tags-todo "@home"
+           ((org-agenda-overriding-header "Home")))
+          ("p" "On the phone" tags-todo "@phone"
+           ((org-agenda-overriding-header "Phone Calls")))
+          ("s" "Shopping to do" tags-todo "@shopping"
+           ((org-agenda-overriding-header "Shopping")))
+          ("e" "While running errands" tags-todo "@errands"
+           ((org-agenda-overriding-header "Errands")))
+
+          ;; TODO States
+          ("w" "Waiting for items" todo "WAITING"
+           ((org-agenda-overriding-header "Waiting")))
+          ;; Misc
+          ))
 
   (setq org-todo-keywords
         '((sequence "TODO(t)" "WAITING(w)" "|" "DONE(d)" "CANCELLED(c)")))
@@ -390,7 +417,13 @@
   (setq org-startup-indented     t
         org-startup-truncated    nil
         org-special-ctrl-a/e     t
-        org-src-fontify-natively t))
+        org-src-fontify-natively t
+
+        org-agenda-block-separator nil
+
+        org-refile-use-outline-path t
+        org-outline-path-complete-in-steps nil
+        ))
 
 (use-package yaml-mode
   :mode "\\.ya?ml\\'")
@@ -747,5 +780,15 @@
 
   (setq mmm-global-mode 'buffers-with-submode-classes
         mmm-submode-decoration-level 2))
+
+(use-package ripgrep
+  :commands (ripgrep-regexp projectile-ripgrep))
+
+(use-package page-break-lines
+  :ensure
+  :defer 2
+  :diminish page-break-lines-mode
+  :config
+  (global-page-break-lines-mode))
 
 (provide 'package-config)

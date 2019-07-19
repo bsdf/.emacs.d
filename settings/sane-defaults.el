@@ -110,4 +110,10 @@
 ;; prefer newer versions of .el code
 (setq load-prefer-newer t)
 
+;; mu4e wants UTF-8
+(set-language-environment "UTF-8")
+
+;; don't create lockfiles to fuck with syncthing
+(setq create-lockfiles nil)
+
 (provide 'sane-defaults)
