@@ -3,5 +3,6 @@
 !init.el
 !settings
 !site-lisp
+mail-config.el
 *.elc
 *~

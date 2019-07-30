@@ -66,13 +66,6 @@
   :config
   (global-display-line-numbers-mode -1))
 
-(use-package gnus
-  :commands gnus
-  :config
-  (setq gnus-select-method
-        '(nnimap "imap.fastmail.com"
-                 (nnimap-stream ssl))))
-
 (use-package gud
   :commands gdb
   :config
@@ -170,6 +163,7 @@
 (use-package prescient
   :after (ivy company)
   :config
+  (setq prescient-save-file "~/.elpa/prescient-save.el")
   (prescient-persist-mode +1)
   (use-package ivy-prescient
     :config
@@ -246,6 +240,7 @@
   (projectile-mode +1))
 
 (use-package ag
+  :if (executable-find "ag")
   :defer 5
   ;; :bind (:map projectile-command-map
   ;;        ("a"   . helm-projectile-ag)
@@ -482,10 +477,7 @@
 
 (use-package flycheck
   :commands flycheck-mode
-  :diminish flycheck-mode
-  ;; :config
-  ;; (global-flycheck-mode)
-  )
+  :diminish flycheck-mode)
 
 (use-package go-mode
   :mode "\\.go\\'")
@@ -680,6 +672,7 @@
 
 (use-package rtags
   :hook ((c-mode c++-mode) . rtags-start-process-unless-running)
+  :if (executable-find "rdm")
   :config
   (use-package flycheck-rtags
     :after rtags
@@ -697,6 +690,7 @@
 
   (rtags-enable-standard-keybindings)
   (setq rtags-autostart-diagnostics nil
+        rtags-use-bookmarks nil
         rtags-completions-enabled t))
 
 (use-package racket-mode
@@ -705,6 +699,7 @@
 (use-package neotree
   :bind (("<f10>" . neotree-toggle))
   :hook (neotree-mode . (lambda ()
+                          (display-line-numbers-mode -1)
                           (visual-line-mode -1)
                           (toggle-truncate-lines 1)))
   :config
@@ -782,6 +777,7 @@
         mmm-submode-decoration-level 2))
 
 (use-package ripgrep
+  :if (executable-find "rg")
   :commands (ripgrep-regexp projectile-ripgrep))
 
 (use-package page-break-lines

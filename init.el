@@ -37,5 +37,6 @@
 (require 'sane-defaults)
 (require 'my-functions)
 (require 'package-config)
+(require 'mail-config)
 (require 'key-config)
 (require 'macros)

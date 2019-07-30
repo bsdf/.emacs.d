@@ -116,4 +116,10 @@
 ;; don't create lockfiles to fuck with syncthing
 (setq create-lockfiles nil)
 
+;; unicode font setup
+(when (member "Symbola" (font-family-list))
+  (setq use-default-font-for-symbols nil)
+  (set-fontset-font t 'unicode "Go Mono")
+  (set-fontset-font t 'unicode "Symbola" nil 'append))
+
 (provide 'sane-defaults)
