@@ -477,7 +477,15 @@
 
 (use-package flycheck
   :commands flycheck-mode
-  :diminish flycheck-mode)
+  :diminish flycheck-mode
+  :config
+  (add-to-list 'display-buffer-alist
+               `(,(rx bos "*Flycheck errors*" eos)
+                 (display-buffer-reuse-window
+                  display-buffer-in-side-window)
+                 (side            . bottom)
+                 (reusable-frames . visible)
+                 (window-height   . 0.20))))
 
 (use-package go-mode
   :mode "\\.go\\'")
