@@ -50,10 +50,11 @@
 (setq-default tab-width 4)
 
 ;; store all backups and autosave files in the tmp dir
+(setq my-backup-dir "~/.elpa/backup")
 (setq backup-directory-alist
-      `((".*" . ,temporary-file-directory)))
+      `((".*" . ,my-backup-dir)))
 (setq auto-save-file-name-transforms
-      `((".*" ,temporary-file-directory t)))
+      `((".*" ,my-backup-dir t)))
 (setq auto-save-list-file-prefix "~/.elpa/auto-save-list/.saves-")
 
 ;; UTF-8
@@ -67,13 +68,13 @@
 (add-to-list 'auto-coding-alist '("\\.nfo\\'" . ibm437))
 
 ;; terminal mouse stuff
-(xterm-mouse-mode t)
-(global-set-key [mouse-4] '(lambda ()
-                             (interactive)
-                             (scroll-down 1)))
-(global-set-key [mouse-5] '(lambda ()
-                             (interactive)
-                             (scroll-up 1)))
+;; (xterm-mouse-mode t)
+;; (global-set-key [mouse-4] '(lambda ()
+;;                              (interactive)
+;;                              (scroll-down 1)))
+;; (global-set-key [mouse-5] '(lambda ()
+;;                              (interactive)
+;;                              (scroll-up 1)))
 (setq ring-bell-function 'ignore)
 
 ;; set frame dimensions
