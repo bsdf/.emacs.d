@@ -15,6 +15,10 @@
  ("C-x a r" . align-regexp)
  ;; ("C-c h" .   'my/copy-whole-buffer)
  ("C-c s"   . my/swap-windows)
- ([remap dabbrev-expand] . hippie-expand))
+ ([remap dabbrev-expand] . hippie-expand)
+ ("C-x RET RET" . compile)
+ ("C-c C-o" . ff-find-other-file)
+ ;; ([remap list-buffers] . ibuffer-list-buffers)
+ )
 
 (provide 'key-config)

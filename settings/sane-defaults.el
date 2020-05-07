@@ -17,11 +17,11 @@
 (global-auto-revert-mode 1)
 
 ;; also refresh dired, but be quiet about it
-(setq global-auto-revert-non-file-buffers t)
+;; (setq global-auto-revert-non-file-buffers t)
 (setq auto-revert-verbose nil)
 
 ;; but don't revert buffer list
-(add-to-list 'global-auto-revert-ignore-modes 'Buffer-menu-mode)
+;; (add-to-list 'global-auto-revert-ignore-modes 'Buffer-menu-mode)
 
 ;; show keystrokes in progress
 (setq echo-keystrokes 0.1)
@@ -122,5 +122,9 @@
   (setq use-default-font-for-symbols nil)
   (set-fontset-font t 'unicode "Go Mono")
   (set-fontset-font t 'unicode "Symbola" nil 'append))
+
+;; compile-command stuff
+(setq compile-command "make"
+      compilation-read-command nil)
 
 (provide 'sane-defaults)

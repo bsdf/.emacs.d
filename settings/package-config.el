@@ -12,6 +12,8 @@
 (require 'use-package-ensure)
 (setq use-package-always-ensure t)
 
+(use-package quelpa-use-package)
+
 ;; uncomment to enable profiling
 ;; (progn
 ;;   (setq use-package-compute-statistics t)
@@ -24,7 +26,7 @@
   :ensure nil
   :diminish dired-omit-mode
   :bind (("C-c C-j" . dired-jump))
-  :hook (dired-mode . (lambda () (dired-omit-mode t)))
+  :hook (dired-mode . (lambda () (dired-omit-mode nil)))
   :init 
   :config
   (require 'dired-x)
@@ -75,8 +77,18 @@
 (use-package tramp
   :defer 5
   :config
+  ;; save tramp backups locally
   (add-to-list 'backup-directory-alist
                (cons tramp-file-name-regexp "~/.elpa/backup"))
+
+  ;; but not su/sudo files
+  (setq backup-enable-predicate
+      (lambda (name)
+        (and (normal-backup-enable-predicate name)
+             (not
+              (let ((method (file-remote-p name 'method)))
+                (when (stringp method)
+                  (member method '("su" "sudo"))))))))
 
   (defun tramp-clean ()
     (interactive)
@@ -101,6 +113,21 @@
     (let ((p (point)))
       ad-do-it
       (goto-char p))))
+
+(use-package conf-mode
+  :config (unbind-key "C-c C-j" conf-mode-map))
+
+(use-package lisp-interaction-mode
+  :ensure nil
+  :hook (lisp-interaction-mode . eldoc-mode))
+
+(use-package cc-mode
+  :ensure nil
+  :bind (:map c++-mode-map
+              ("C-c C-o" . ff-find-other-file))
+  :config
+  (c-set-offset 'arglist-intro '++)
+  (c-set-offset 'arglist-cont-nonempty '++))
 
 ;; third party packages
 
@@ -215,7 +242,27 @@
         web-mode-enable-auto-quoting  nil))
 
 (use-package js2-mode
-  :mode "\\.js\\'")
+  :mode "\\.js\\'"
+  :config
+  (setq js2-basic-offset 2))
+
+(use-package prettier-js
+  :bind (:map js2-mode-map
+              ("C-c s" . prettier-js))
+  :after js2-mode)
+
+(use-package indium
+  :commands (indium-launch))
+
+(use-package tern
+  :commands (tern-mode)
+  :after js2-mode)
+
+(use-package company-tern
+  :ensure nil
+  :quelpa (company-tern :fetcher github :repo "emacsmirror/company-tern")
+  :hook (tern-mode
+         . (lambda ()(add-to-list 'company-backends 'company-tern))))
 
 (use-package json-mode
   :mode ("\\.eslintrc\\'"
@@ -286,6 +333,9 @@
          ("C-c e" . macrostep-expand)
          :map lisp-interaction-mode-map
          ("C-c e" . macrostep-expand)))
+
+(use-package doct
+  :commands (doct))
 
 (use-package org
   :ensure org-plus-contrib
@@ -422,6 +472,8 @@
   (global-company-mode))
 
 (use-package flycheck
+  :ensure nil
+  :quelpa (flycheck :fetcher github :repo "flycheck/flycheck" :branch "cpitclaudel_margin-indication")
   :commands flycheck-mode
   :diminish flycheck-mode
   :config
@@ -557,17 +609,32 @@
 (use-package groovy-mode
   :mode "\\.groovy\\'")
 
+(use-package python-mode
+  :hook (python-mode . flycheck-mode)
+  :mode "\\.py\\(de\\)?\\'")
+
 (use-package anaconda-mode
   :diminish anaconda-mode
   :hook ((python-mode . anaconda-mode)
-         (python-mode . anaconda-eldoc-mode))
+         (anaconda-mode . anaconda-eldoc-mode))
   :config
-  (setq anaconda-mode-installation-directory "~/.elpa/anaconda-mode"))
+  (add-to-list 'flycheck-disabled-checkers 'python-pylint)
+  (setq anaconda-mode-installation-directory "~/.elpa/anaconda-mode"
+        python-indent-offset 4))
 
 (use-package company-anaconda
-  :after anaconda-mode
-  :config
-  (add-to-list 'company-backends 'company-anaconda))
+  :hook (anaconda-mode
+         . (lambda ()
+             (add-to-list 'company-backends 'company-anaconda))))
+
+(use-package pyenv-mode
+  :hook python-mode
+  :init
+  (my/add-to-exec-path "~/.pyenv/bin"))
+
+(use-package blacken
+  :bind (:map python-mode-map
+              ("C-c s" . blacken-buffer)))
 
 (use-package tuareg
   :mode ("\\.ml[iyp]?\\'" . tuareg-mode)
@@ -608,6 +675,7 @@
 
 (use-package flycheck-ocaml
   :after flycheck
+  :functions (flycheck-define-generic-checker flycheck-ocaml-merlin-start flycheck-verify-ocaml-merlin)
   :config
   (setq merlin-error-after-save nil)
   (flycheck-define-generic-checker 'ocaml-merlin-reason
@@ -623,7 +691,7 @@
   :mode "\\.rkt\\'")
 
 (use-package neotree
-  :bind (("<f10>" . neotree-toggle))
+  :bind (("<f12>" . neotree-toggle))
   :hook (neotree-mode . (lambda ()
                           (display-line-numbers-mode -1)
                           (visual-line-mode -1)
@@ -667,10 +735,7 @@
 
 (use-package rust-mode
   :mode "\\.rs\\'"
-  :config
-  (let ((cargo-bin (expand-file-name "~/.cargo/bin/")))
-    (add-to-list 'exec-path cargo-bin)
-    (setenv "PATH" (concat (getenv "PATH") ":" cargo-bin))))
+  :init (my/add-to-exec-path "~/.cargo/bin"))
 
 (use-package racer
   :after rust-mode
@@ -721,22 +786,30 @@
 
 (use-package lsp-mode
   :commands lsp
+  :bind (:map c++-mode-map
+              ("C-c C-l C-s" . lsp))
   :config
-  
-  )
+  (setq lsp-enable-on-type-formatting nil
+        lsp-enable-indentation nil))
 
 (use-package lsp-ui
-  :hook ((lsp-mode . lsp-ui-mode))
   :config
-  (setq lsp-ui-flycheck-enable t))
+  (setq lsp-ui-flycheck-enable t
+        lsp-ui-doc-enable nil
+        lsp-ui-sideline-enable nil))
 
-(use-package company-lsp
-  :hook lsp-mode)
+(use-package dap-mode
+  :custom
+  (dap-lldb-debug-program '("/usr/bin/lldb-vscode-9"))
+  :config
+  (require 'dap-lldb))
 
-;; (use-package ccls
-;;   :config
-;;   (setq ccls-executable "ccls")
-;;   (setq-default flycheck-disabled-checkers '(c/c++-clang c/c++-cppcheck c/c++-gcc)))
+(use-package company-lsp)
+
+(use-package ccls
+  :config
+  (setq ccls-executable "ccls")
+  (setq-default flycheck-disabled-checkers '(c/c++-clang c/c++-cppcheck c/c++-gcc)))
 
 (use-package sbt-mode
   :commands sbt-start sbt-command
@@ -752,5 +825,8 @@
 
 (use-package csharp-mode
   :mode "\\.cs\\'")
+
+(use-package multiple-cursors
+  :bind (("C-c m c" . mc/edit-lines)))
 
 (provide 'package-config)

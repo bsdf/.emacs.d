@@ -88,4 +88,9 @@ buffer is not visiting a file."
                          (ido-read-file-name "Find file(as root): ")))
     (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
 
+(defun my/add-to-exec-path (path)
+  (let ((expanded (expand-file-name path)))
+    (add-to-list 'exec-path expanded)
+    (setenv "PATH" (concat (getenv "PATH") ":" expanded))))
+
 (provide 'my-functions)
