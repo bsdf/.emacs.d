@@ -93,7 +93,8 @@
 (diminish 'visual-line-mode)
 
 ;; set gc threshold higher
-(setq gc-cons-threshold 20000000)
+;; (setq gc-cons-threshold 20000000)
+(setq gc-cons-threshold (* gc-cons-threshold 2))
 
 ;; use a less dumbass regex syntax
 (setq reb-re-syntax 'string)
@@ -118,13 +119,28 @@
 (setq create-lockfiles nil)
 
 ;; unicode font setup
-(when (member "Symbola" (font-family-list))
-  (setq use-default-font-for-symbols nil)
-  (set-fontset-font t 'unicode "Go Mono")
-  (set-fontset-font t 'unicode "Symbola" nil 'append))
+;; (when (member "Symbola" (font-family-list))
+;;   (setq use-default-font-for-symbols nil)
+;;   (set-fontset-font t 'unicode "Go Mono")
+;;   (set-fontset-font t 'unicode "Symbola" nil 'append))
 
 ;; compile-command stuff
 (setq compile-command "make"
       compilation-read-command nil)
+
+(let ((dir (expand-file-name "~/opt/emacs/src")))
+  (dolist (x '(source-directory find-function-C-source-directory))
+    (set x dir)))
+
+;; 😄 😱 😸 👸 👽 🙋
+(set-fontset-font
+ t
+ '(#x1f300 . #x1fad0)
+ (cond
+  ((member "Noto Color Emoji" (font-family-list)) "Noto Color Emoji")
+  ((member "Noto Emoji" (font-family-list)) "Noto Emoji")
+  ((member "Segoe UI Emoji" (font-family-list)) "Segoe UI Emoji")
+  ((member "Symbola" (font-family-list)) "Symbola")
+  ((member "Apple Color Emoji" (font-family-list)) "Apple Color Emoji")))
 
 (provide 'sane-defaults)

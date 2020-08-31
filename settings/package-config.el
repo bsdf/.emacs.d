@@ -38,17 +38,23 @@
   :hook (eshell-mode . my-eshell-setup)
   :bind (:map minibuffer-local-map
               ([remap eshell-pcomplete] . completion-at-point)
+              :map eshell-mode-map
               ("C-c M-O" . (lambda () (interactive)
                              (eshell/clear t)
                              (eshell-reset))))
   :init
   (defun my-eshell-setup ()
     (require 'em-tramp)
+
+    ;; (add-hook 'eshell-preoutput-filter-functions 'ansi-color-apply)
+    
     (add-to-list 'eshell-modules-list 'eshell-tramp)
-    (eshell-cmpl-initialize)
-    (setq-local ivy-display-functions-alist
-                (remq (assoc 'ivy-completion-in-region ivy-display-functions-alist)
-                      ivy-display-functions-alist)))
+    ;; (eshell-cmpl-initialize)
+    (setq-local pcomplete-ignore-case t)
+    ;; (setq-local ivy-display-functions-alist
+    ;;             (remq (assoc 'ivy-completion-in-region ivy-display-functions-alist)
+    ;;                   ivy-display-functions-alist))
+    )
 
   :config
   (setq password-cache               t
@@ -57,19 +63,25 @@
         eshell-prefer-lisp-functions t
         eshell-prefer-lisp-variables t
         eshell-hist-ignoredups       t
-        eshell-save-history-on-exit  t
-        Man-notify-method            'pushy))
+        eshell-save-history-on-exit  t))
 
-(use-package esh-autosuggest
-  :hook (eshell-mode . esh-autosuggest-mode))
+(use-package man
+  :config
+  (setq Man-notify-method 'pushy
+        Man-width-max      100))
+
+;; (use-package esh-autosuggest
+;;   :hook (eshell-mode . esh-autosuggest-mode))
 
 (use-package display-line-numbers
-  :hook ((prog-mode nxml-mode) . display-line-numbers-mode)
+  :hook ((prog-mode nxml-mode conf-mode) . display-line-numbers-mode)
   :config
   (global-display-line-numbers-mode -1))
 
 (use-package gud
   :commands gdb
+  :bind (:map gud-mode-map
+              ("<tab>" . company-complete))
   :config
   (setq gdb-show-main t
         gdb-display-io-nopopup t))
@@ -129,6 +141,11 @@
   (c-set-offset 'arglist-intro '++)
   (c-set-offset 'arglist-cont-nonempty '++))
 
+(use-package windmove
+  :config
+  (setq windmove-wrap-around nil)
+  (windmove-default-keybindings))
+
 ;; third party packages
 
 (use-package color-theme-sanityinc-tomorrow
@@ -187,7 +204,8 @@
          :map minibuffer-local-map
          ("C-r"     . counsel-minibuffer-history))
   :config
-  (counsel-mode 1))
+  (counsel-mode 1)
+  (setq ivy-initial-inputs-alist nil))
 
 (use-package prescient
   :after (ivy company)
@@ -199,9 +217,10 @@
   :after prescient
   :config (ivy-prescient-mode +1))
 
-(use-package company-prescient
-  :after prescient
-  :config (company-prescient-mode +1))
+;; (use-package company-prescient
+;;   :disable
+;;   :after prescient
+;;   :config (company-prescient-mode +1))
 
 (use-package counsel-projectile
   :after (ivy counsel projectile)
@@ -258,11 +277,11 @@
   :commands (tern-mode)
   :after js2-mode)
 
-(use-package company-tern
-  :ensure nil
-  :quelpa (company-tern :fetcher github :repo "emacsmirror/company-tern")
-  :hook (tern-mode
-         . (lambda ()(add-to-list 'company-backends 'company-tern))))
+;; (use-package company-tern
+;;   :ensure nil
+;;   :quelpa (company-tern :fetcher github :repo "emacsmirror/company-tern")
+;;   :hook (tern-mode
+;;          . (lambda ()(add-to-list 'company-backends 'company-tern))))
 
 (use-package json-mode
   :mode ("\\.eslintrc\\'"
@@ -318,6 +337,7 @@
 (use-package exec-path-from-shell
   :unless (eq system-type 'windows-nt)
   :defer 5
+  :demand t
   :config
   (setq exec-path-from-shell-check-startup-files nil)
   (exec-path-from-shell-initialize))
@@ -447,9 +467,10 @@
   :defines sly-mrepl-mode-map
   :functions (sly-mrepl-mode sly-mrepl-clear-repl sly-simple-completions)
   :config
-  (let ((helper (expand-file-name "~/.roswell/helper.el")))
-    (when (file-exists-p helper) (load helper)))
-
+  (if (executable-find "rosconfig")
+      (let ((helper (expand-file-name "~/.roswell/helper.el")))
+        (when (file-exists-p helper) (load helper))))
+  
   (with-eval-after-load 'sly-mrepl
     (bind-key "C-c M-O" #'sly-mrepl-clear-repl sly-mrepl-mode-map)
     (sp-local-pair #'sly-mrepl-mode "'" nil :actions nil)))
@@ -473,7 +494,7 @@
 
 (use-package flycheck
   :ensure nil
-  :quelpa (flycheck :fetcher github :repo "flycheck/flycheck" :branch "cpitclaudel_margin-indication")
+  ;; :quelpa (flycheck :fetcher github :repo "flycheck/flycheck" :branch "cpitclaudel_margin-indication")
   :commands flycheck-mode
   :diminish flycheck-mode
   :config
@@ -610,8 +631,12 @@
   :mode "\\.groovy\\'")
 
 (use-package python-mode
-  :hook (python-mode . flycheck-mode)
-  :mode "\\.py\\(de\\)?\\'")
+  :hook (python-mode . (lambda ()
+                         (add-to-list 'flycheck-disabled-checkers 'python-pylint)
+                         flycheck-mode))
+  :mode "\\.py\\(de\\)?\\'"
+  :config
+  (add-to-list 'flycheck-disabled-checkers 'python-pylint))
 
 (use-package anaconda-mode
   :diminish anaconda-mode
@@ -623,9 +648,12 @@
         python-indent-offset 4))
 
 (use-package company-anaconda
+  :after anaconda-mode
   :hook (anaconda-mode
          . (lambda ()
-             (add-to-list 'company-backends 'company-anaconda))))
+             (add-to-list 'company-backends 'company-anaconda)))
+  :config
+  (add-to-list 'flycheck-disabled-checkers 'python-pylint))
 
 (use-package pyenv-mode
   :hook python-mode
@@ -793,20 +821,24 @@
         lsp-enable-indentation nil))
 
 (use-package lsp-ui
+  :commands lsp
   :config
   (setq lsp-ui-flycheck-enable t
         lsp-ui-doc-enable nil
         lsp-ui-sideline-enable nil))
 
 (use-package dap-mode
+  :commands dap-mode
   :custom
   (dap-lldb-debug-program '("/usr/bin/lldb-vscode-9"))
   :config
   (require 'dap-lldb))
 
-(use-package company-lsp)
+(use-package company-lsp
+  :hook lsp-mode)
 
 (use-package ccls
+  :mode "\\.(c(pp|c)?|h(h|pp)?)\\'"
   :config
   (setq ccls-executable "ccls")
   (setq-default flycheck-disabled-checkers '(c/c++-clang c/c++-cppcheck c/c++-gcc)))
@@ -828,5 +860,73 @@
 
 (use-package multiple-cursors
   :bind (("C-c m c" . mc/edit-lines)))
+
+;; (use-package unicode-fonts
+;;   :config
+;;   (setq unicode-fonts-block-font-mapping
+;;         '(("Emoticons"
+;; 	       ("Noto Color Emoji" "Symbola" "Quivira")))
+;;         unicode-fonts-fontset-names '("fontset-default"))
+;;   (unicode-fonts-setup))
+
+(use-package undo-tree
+  :config
+  (global-undo-tree-mode))
+
+;; (use-package direnv
+;;   :if (executable-find "direnv")
+;;   :config
+;;   (direnv-mode))
+
+(use-package ggtags
+  :hook (c-mode-common
+         . (lambda ()
+             (when (derived-mode-p 'c-mode 'c++-mode 'java-mode)
+               (ggtags-mode 1)))))
+
+(use-package visual-regexp
+  :bind (("C-c r" . vr/replace)
+         ("C-c q" . vr/query-replace)))
+
+(use-package sqlformat
+  :if (executable-find "pg_format")
+  :hook sql-mode
+  :bind (:map sql-mode-map
+              ("C-c C-f" . sqlformat))
+  :config
+  (setq sqlformat-command 'pgformatter
+        sqlformat-args '("-s2" "-f2")))
+
+(use-package keychain-environment
+  :demand t
+  :config (keychain-refresh-environment))
+
+(use-package xterm-color
+  :after eshell
+  :config
+  (add-hook 'eshell-before-prompt-hook
+            (lambda ()
+              (setq xterm-color-preserve-properties t)))
+  (add-to-list 'eshell-preoutput-filter-functions 'xterm-color-filter)
+  (setq eshell-output-filter-functions (remove 'eshell-handle-ansi-color eshell-output-filter-functions))
+
+  (setenv "TERM" "xterm-256color"))
+
+(use-package tramp-theme
+  :demand t
+  :config (load-theme 'tramp))
+
+(use-package fish-completion
+  :config)
+
+(use-package paradox
+  :defer 1
+  :custom
+  (paradox-column-width-package 27)
+  (paradox-column-width-version 13)
+  (paradox-execute-asynchronously t)
+  (paradox-hide-wiki-packages t)
+  :config
+  (paradox-enable))
 
 (provide 'package-config)
