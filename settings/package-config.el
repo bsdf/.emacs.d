@@ -25,12 +25,15 @@
 (use-package dired
   :ensure nil
   :diminish dired-omit-mode
-  :bind (("C-c C-j" . dired-jump))
+  :bind (("C-c C-j" . dired-jump)
+         :map dired-mode-map
+         ("C-c C-w" . wdired-change-to-wdired-mode))
   :hook (dired-mode . (lambda () (dired-omit-mode nil)))
   :init 
   :config
   (require 'dired-x)
-  (setq dired-omit-verbose nil))
+  (setq dired-omit-verbose nil
+        dired-listing-switches "-alh"))
 
 (use-package eshell
   :commands eshell
@@ -146,6 +149,17 @@
   (setq windmove-wrap-around nil)
   (windmove-default-keybindings))
 
+(use-package uniquify
+  :defer 1
+  :ensure nil
+  :config
+  (setq uniquify-buffer-name-style 'forward
+        uniquify-separator "/"
+        uniquify-after-kill-buffer-p t
+        uniquify-ignore-buffers-re "^\\*"))
+
+(use-package midnight :defer 5)
+
 ;; third party packages
 
 (use-package color-theme-sanityinc-tomorrow
@@ -230,6 +244,7 @@
                '(counsel-projectile-find-file . ivy-prescient-sort-function)))
 
 (use-package projectile
+  :diminish projectile-mode
   :bind-keymap ("C-c p" . projectile-command-map)
   :config
   (setq
@@ -329,10 +344,10 @@
   :diminish 'yas-minor-mode
   :defer 2
   :config
-  (use-package yasnippet-snippets
-    :after yasnippet)
   (setq yas-verbosity 2)
   (yas-global-mode 1))
+
+(use-package yasnippet-snippets :after yasnippet)
 
 (use-package exec-path-from-shell
   :unless (eq system-type 'windows-nt)
@@ -494,10 +509,12 @@
 
 (use-package flycheck
   :ensure nil
-  ;; :quelpa (flycheck :fetcher github :repo "flycheck/flycheck" :branch "cpitclaudel_margin-indication")
   :commands flycheck-mode
   :diminish flycheck-mode
   :config
+  (setq-default flycheck-disabled-checkers
+                (append flycheck-disabled-checkers
+                        '(python-pylint c/c++-clang c/c++-cppcheck c/c++-gcc)))
   (add-to-list 'display-buffer-alist
                `(,(rx bos "*Flycheck errors*" eos)
                  (display-buffer-reuse-window
@@ -507,7 +524,9 @@
                  (window-height   . 0.20))))
 
 (use-package go-mode
-  :mode "\\.go\\'")
+  :mode "\\.go\\'"
+  :config
+  (my/add-to-exec-path "~/go/bin"))
 
 (use-package scala-mode
   :mode "\\.s\\(cala\\|bt\\)$"
@@ -631,34 +650,13 @@
   :mode "\\.groovy\\'")
 
 (use-package python-mode
-  :hook (python-mode . (lambda ()
-                         (add-to-list 'flycheck-disabled-checkers 'python-pylint)
-                         flycheck-mode))
-  :mode "\\.py\\(de\\)?\\'"
-  :config
-  (add-to-list 'flycheck-disabled-checkers 'python-pylint))
+  :hook (python-mode . flycheck-mode)
+  :mode "\\.py\\(de\\)?\\'")
 
-(use-package anaconda-mode
-  :diminish anaconda-mode
-  :hook ((python-mode . anaconda-mode)
-         (anaconda-mode . anaconda-eldoc-mode))
-  :config
-  (add-to-list 'flycheck-disabled-checkers 'python-pylint)
-  (setq anaconda-mode-installation-directory "~/.elpa/anaconda-mode"
-        python-indent-offset 4))
-
-(use-package company-anaconda
-  :after anaconda-mode
-  :hook (anaconda-mode
-         . (lambda ()
-             (add-to-list 'company-backends 'company-anaconda)))
-  :config
-  (add-to-list 'flycheck-disabled-checkers 'python-pylint))
-
-(use-package pyenv-mode
-  :hook python-mode
-  :init
-  (my/add-to-exec-path "~/.pyenv/bin"))
+;; (use-package pyenv-mode
+;;   :hook python-mode
+;;   :init
+;;   (my/add-to-exec-path "~/.pyenv/bin"))
 
 (use-package blacken
   :bind (:map python-mode-map
@@ -777,30 +775,31 @@
                        (flycheck-mode 1)
                        (flycheck-rust-setup))))
 
-(use-package mmm-mode
-  :defer 2
-  :commands mmm-mode
-  :config
-  (mmm-add-classes
-   '((jenkinsfile-yaml
-      :submode yaml-mode
-      :delimiter-mode nil
-      :front "yml\\s-*=\\s-*\"\"\""
-      :back "\"\"\"")
+;; (use-package mmm-mode
+;;   :diminish mmm-mode
+;;   :defer 2
+;;   :commands mmm-mode
+;;   :config
+;;   (mmm-add-classes
+;;    '((jenkinsfile-yaml
+;;       :submode yaml-mode
+;;       :delimiter-mode nil
+;;       :front "yml\\s-*=\\s-*\"\"\""
+;;       :back "\"\"\"")
 
-     (c++-glsl
-      :submode glsl-mode
-      :front "R\"glsl(\n?"
-      :back ")glsl\""
-      )))
+;;      (c++-glsl
+;;       :submode glsl-mode
+;;       :front "R\"glsl(\n?"
+;;       :back ")glsl\""
+;;       )))
 
-  (add-to-list 'mmm-c-derived-modes 'glsl-mode)
+;;   (add-to-list 'mmm-c-derived-modes 'glsl-mode)
 
-  (mmm-add-mode-ext-class 'groovy-mode "jenkinsfile\\'" 'jenkinsfile-yaml)
-  (mmm-add-mode-ext-class 'c++-mode nil 'c++-glsl)
+;;   (mmm-add-mode-ext-class 'groovy-mode "jenkinsfile\\'" 'jenkinsfile-yaml)
+;;   (mmm-add-mode-ext-class 'c++-mode nil 'c++-glsl)
 
-  (setq mmm-global-mode 'buffers-with-submode-classes
-        mmm-submode-decoration-level 2))
+;;   (setq mmm-global-mode 'buffers-with-submode-classes
+;;         mmm-submode-decoration-level 2))
 
 (use-package ripgrep
   :if (executable-find "rg")
@@ -814,18 +813,23 @@
 
 (use-package lsp-mode
   :commands lsp
-  :bind (:map c++-mode-map
-              ("C-c C-l C-s" . lsp))
+  ;; :bind (:map c++-mode-map
+  ;;             ("C-c C-l C-s" . lsp))
   :config
+  (ggtags-mode -1)
   (setq lsp-enable-on-type-formatting nil
         lsp-enable-indentation nil))
 
 (use-package lsp-ui
-  :commands lsp
+  :commands lsp-ui-mode
+  :hook lsp-mode
+  :bind (:map lsp-ui-mode-map
+              ("M-." . lsp-ui-peek-find-definitions))
   :config
   (setq lsp-ui-flycheck-enable t
         lsp-ui-doc-enable nil
-        lsp-ui-sideline-enable nil))
+        lsp-ui-sideline-enable nil
+        lsp-modeline-workspace-status-enable))
 
 (use-package dap-mode
   :commands dap-mode
@@ -840,8 +844,8 @@
 (use-package ccls
   :mode "\\.(c(pp|c)?|h(h|pp)?)\\'"
   :config
-  (setq ccls-executable "ccls")
-  (setq-default flycheck-disabled-checkers '(c/c++-clang c/c++-cppcheck c/c++-gcc)))
+  ;; (setq lsp-disabled-clients '(ccls))
+  (setq ccls-executable "ccls"))
 
 (use-package sbt-mode
   :commands sbt-start sbt-command
@@ -863,26 +867,22 @@
 
 ;; (use-package unicode-fonts
 ;;   :config
-;;   (setq unicode-fonts-block-font-mapping
-;;         '(("Emoticons"
-;; 	       ("Noto Color Emoji" "Symbola" "Quivira")))
-;;         unicode-fonts-fontset-names '("fontset-default"))
+;;   ;; (setq unicode-fonts-block-font-mapping
+;;   ;;       '(("Emoticons"
+;;   ;;          ("Noto Color Emoji" "Symbola" "Quivira")))
+;;   ;;       unicode-fonts-fontset-names '("fontset-default"))
 ;;   (unicode-fonts-setup))
 
 (use-package undo-tree
+  :diminish undo-tree-mode
   :config
   (global-undo-tree-mode))
 
-;; (use-package direnv
-;;   :if (executable-find "direnv")
-;;   :config
-;;   (direnv-mode))
-
-(use-package ggtags
-  :hook (c-mode-common
-         . (lambda ()
-             (when (derived-mode-p 'c-mode 'c++-mode 'java-mode)
-               (ggtags-mode 1)))))
+;; (use-package ggtags
+;;   :hook (c-mode-common
+;;          . (lambda ()
+;;              (when (derived-mode-p 'c-mode 'c++-mode 'java-mode)
+;;                (ggtags-mode 1)))))
 
 (use-package visual-regexp
   :bind (("C-c r" . vr/replace)
@@ -919,14 +919,65 @@
 (use-package fish-completion
   :config)
 
-(use-package paradox
-  :defer 1
-  :custom
-  (paradox-column-width-package 27)
-  (paradox-column-width-version 13)
-  (paradox-execute-asynchronously t)
-  (paradox-hide-wiki-packages t)
+;; (use-package paradox
+;;   :defer 1
+;;   :custom
+;;   (paradox-column-width-package 27)
+;;   (paradox-column-width-version 13)
+;;   (paradox-execute-asynchronously t)
+;;   (paradox-hide-wiki-packages t)
+;;   :config
+;;   (paradox-enable))
+
+(use-package elpy
+  :ensure t
+  :defer t
+  :init
+  (advice-add 'python-mode :before 'elpy-enable)
   :config
-  (paradox-enable))
+  (setq elpy-modules (delete 'elpy-module-flymake elpy-modules)))
+
+;; (use-package selectrum
+;;   :ensure t
+;;   :demand t
+;;   :bind (:map selectrum-minibuffer-map
+;;               ("C-j"   . selectrum-insert-current-candidate)
+;;               ("C-M-j" . selectrum-submit-exact-input))
+;;   :custom-face
+;;   (selectrum-current-candidate ((t (:background "#515151"))))
+;;   :config
+;;   (selectrum-mode +1)
+;;   (setq projectile-completion-system 'default
+;;         magit-completing-read-function 'selectrum-completing-read))
+
+;; (use-package selectrum-prescient
+;;   :after selectrum
+;;   :config
+;;   (selectrum-prescient-mode +1)
+;;   (prescient-persist-mode +1))
+
+(use-package gcmh
+  :ensure t
+  :demand t
+  :diminish gcmh-mode
+  :config (gcmh-mode 1))
+
+(use-package dired-narrow
+  :ensure t
+  :bind (:map dired-mode-map
+              ("/" . dired-narrow)))
+
+(use-package elpher
+  :bind (:map elpher-mode-map
+              ("n" . elpher-next-link)
+              ("p" . elpher-prev-link)
+              ("`" . elpher-prev-link)
+              ("l" . recenter-top-bottom))
+  :config
+  (setq elpher-gemini-link-string "=> "
+        elpher-gemini-bullet-string "*"))
+
+(use-package gemini-mode
+  :mode "\\.gmi\\'")
 
 (provide 'package-config)

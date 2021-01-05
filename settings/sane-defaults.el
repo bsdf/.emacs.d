@@ -68,7 +68,7 @@
 (add-to-list 'auto-coding-alist '("\\.nfo\\'" . ibm437))
 
 ;; terminal mouse stuff
-;; (xterm-mouse-mode t)
+(xterm-mouse-mode t)
 ;; (global-set-key [mouse-4] '(lambda ()
 ;;                              (interactive)
 ;;                              (scroll-down 1)))
@@ -91,6 +91,7 @@
 ;; diminish thangs
 (diminish 'eldoc-mode)
 (diminish 'visual-line-mode)
+(diminish 'abbrev-mode)
 
 ;; set gc threshold higher
 ;; (setq gc-cons-threshold 20000000)
@@ -142,5 +143,10 @@
   ((member "Segoe UI Emoji" (font-family-list)) "Segoe UI Emoji")
   ((member "Symbola" (font-family-list)) "Symbola")
   ((member "Apple Color Emoji" (font-family-list)) "Apple Color Emoji")))
+
+
+;; long line mitigation
+(setq bidi-paragraph-direction 'left-to-right)
+(global-so-long-mode 1)
 
 (provide 'sane-defaults)
