@@ -9,10 +9,12 @@
 (require 'diminish)
 (require 'bind-key)
 
-(require 'use-package-ensure)
-(setq use-package-always-ensure t)
+;; (require 'use-package-ensure)
+;; (setq use-package-always-ensure t)
 
-(use-package quelpa-use-package)
+(use-package quelpa-use-package
+  :config
+  (setq quelpa-update-melpa-p nil))
 
 ;; uncomment to enable profiling
 ;; (progn
@@ -24,15 +26,15 @@
 
 (use-package dired
   :ensure nil
-  :diminish dired-omit-mode
+  ;:diminish dired-omit-mode
   :bind (("C-c C-j" . dired-jump)
          :map dired-mode-map
          ("C-c C-w" . wdired-change-to-wdired-mode))
-  :hook (dired-mode . (lambda () (dired-omit-mode nil)))
+  ;; :hook (dired-mode . (lambda () (dired-omit-mode nil)))
   :init 
   :config
   (require 'dired-x)
-  (setq dired-omit-verbose nil
+  (setq ;dired-omit-verbose nil
         dired-listing-switches "-alh"))
 
 (use-package eshell
@@ -41,10 +43,11 @@
   :hook (eshell-mode . my-eshell-setup)
   :bind (:map minibuffer-local-map
               ([remap eshell-pcomplete] . completion-at-point)
-              :map eshell-mode-map
-              ("C-c M-O" . (lambda () (interactive)
-                             (eshell/clear t)
-                             (eshell-reset))))
+              ;; :map eshell-mode-map
+              ;; ("C-c M-O" . (lambda () (interactive)
+              ;;                (eshell/clear t)
+              ;;                (eshell-reset)))
+              )
   :init
   (defun my-eshell-setup ()
     (require 'em-tramp)
@@ -73,11 +76,8 @@
   (setq Man-notify-method 'pushy
         Man-width-max      100))
 
-;; (use-package esh-autosuggest
-;;   :hook (eshell-mode . esh-autosuggest-mode))
-
 (use-package display-line-numbers
-  :hook ((prog-mode nxml-mode conf-mode) . display-line-numbers-mode)
+  :hook ((prog-mode nxml-mode conf-mode text-mode) . display-line-numbers-mode)
   :config
   (global-display-line-numbers-mode -1))
 
@@ -139,10 +139,13 @@
 (use-package cc-mode
   :ensure nil
   :bind (:map c++-mode-map
-              ("C-c C-o" . ff-find-other-file))
+              ("C-c C-o" . ff-find-other-file)
+              ("C-c C-i" . c-set-offset))
   :config
   (c-set-offset 'arglist-intro '++)
-  (c-set-offset 'arglist-cont-nonempty '++))
+  (c-set-offset 'arglist-cont '+)
+  (c-set-offset 'arglist-cont-nonempty '++)
+  (c-set-offset 'arglist-close 0))
 
 (use-package windmove
   :config
@@ -160,6 +163,34 @@
 
 (use-package midnight :defer 5)
 
+(use-package asm-mode
+  :hook (asm-mode . (lambda ()
+                      (electric-indent-mode -1)
+                      (setq-local indent-tabs-mode t
+				                  tab-width 8)))
+  :init
+  (defun asm-calculate-indentation ()
+    (or
+     ;; Flush labels to the left margin.
+     (and (looking-at "\\(\\sw\\|\\s_\\)+:") 0)
+     ;; Labels starting with "."
+     (and (looking-at "\\(\\.\\(\\sw\\|\\s_\\)+\\)\\>:") 0)
+     ;; Same thing for `;;;' comments.
+     (and (looking-at "\\s<\\s<\\s<") 0)
+     ;; Simple `;' comments go to the comment-column.
+     (and (looking-at "\\s<\\(\\S<\\|\\'\\)") comment-column)
+     ;; The rest goes at the first tab stop.
+     (indent-next-tab-stop 0))))
+
+(use-package recentf
+  :defer 5
+  :config (recentf-mode))
+
+(use-package perl-mode
+  :config
+  (setq lsp-perl-language-server-path
+        (concat (getenv "HOME") "/.plenv/shims/perl")))
+
 ;; third party packages
 
 (use-package color-theme-sanityinc-tomorrow
@@ -171,7 +202,6 @@
   :bind (("C-x g" . magit-status))
   :defer 2
   :config
-  (global-magit-file-mode +1)
   (setq magit-log-arguments '("--decorate")
         magit-auto-revert-mode t
         git-commit-finish-query-functions nil)
@@ -190,36 +220,36 @@
          ("\\.markdown\\'" . markdown-mode)
          ("\\.md\\'"       . markdown-mode)))
 
-(use-package ivy
-  :demand
-  :diminish ivy-mode
-  :functions ivy-mode
-  :bind (("C-c C-r" . ivy-resume)
-         ("<f6>"    . ivy-resume))
-  :config
-  (ivy-mode 1)
-  (setq
-   ivy-use-virtual-buffers          t
-   enable-recursive-minibuffers     t
-   projectile-completion-system     'ivy
-   projectile-switch-project-action #'projectile-find-file
-   magit-completing-read-function   'ivy-completing-read
-   ivy-extra-directories            '()))
+;; (use-package ivy
+;;   :demand
+;;   :diminish ivy-mode
+;;   :functions ivy-mode
+;;   :bind (("C-c C-r" . ivy-resume)
+;;          ("<f6>"    . ivy-resume))
+;;   :config
+;;   (ivy-mode 1)
+;;   (setq
+;;    ivy-use-virtual-buffers          t
+;;    enable-recursive-minibuffers     t
+;;    projectile-completion-system     'ivy
+;;    projectile-switch-project-action #'projectile-find-file
+;;    magit-completing-read-function   'ivy-completing-read
+;;    ivy-extra-directories            '()))
 
-(use-package counsel
-  :after ivy
-  :demand
-  :diminish counsel-mode
-  :bind (("<f2> u"  . counsel-unicode-char)
-         ("C-c g"   . counsel-git)
-         ("C-c j"   . counsel-git-grep)
-         ("C-c k"   . counsel-ag)
-         ("C-x l"   . counsel-locate)
-         :map minibuffer-local-map
-         ("C-r"     . counsel-minibuffer-history))
-  :config
-  (counsel-mode 1)
-  (setq ivy-initial-inputs-alist nil))
+;; (use-package counsel
+;;   :after ivy
+;;   :demand
+;;   :diminish counsel-mode
+;;   :bind (("<f2> u"  . counsel-unicode-char)
+;;          ("C-c g"   . counsel-git)
+;;          ("C-c j"   . counsel-git-grep)
+;;          ("C-c k"   . counsel-ag)
+;;          ("C-x l"   . counsel-locate)
+;;          :map minibuffer-local-map
+;;          ("C-r"     . counsel-minibuffer-history))
+;;   :config
+;;   (counsel-mode 1)
+;;   (setq ivy-initial-inputs-alist nil))
 
 (use-package prescient
   :after (ivy company)
@@ -292,12 +322,6 @@
   :commands (tern-mode)
   :after js2-mode)
 
-;; (use-package company-tern
-;;   :ensure nil
-;;   :quelpa (company-tern :fetcher github :repo "emacsmirror/company-tern")
-;;   :hook (tern-mode
-;;          . (lambda ()(add-to-list 'company-backends 'company-tern))))
-
 (use-package json-mode
   :mode ("\\.eslintrc\\'"
          "\\.json\\'"
@@ -307,12 +331,16 @@
   (setq json-reformat:indent-width 2
         js-indent-level            2))
 
-(use-package spaceline
-  :demand
-  :config
-  (setq powerline-default-separator   'wave
-        spaceline-highlight-face-func #'spaceline-highlight-face-default)
-  (require 'my-spaceline-config))
+;; (use-package spaceline
+;;   :demand
+;;   :config
+;;   (setq powerline-default-separator   'wave
+;;         spaceline-highlight-face-func #'spaceline-highlight-face-default)
+;;   (require 'my-spaceline-config)
+;;   ;; (require 'spaceline-config)
+;;   ;; (spaceline-emacs-theme)
+;;   ;; (spaceline-spacemacs-theme)
+;;   )
 
 (setq my-lisp-modes
       '(clojure-mode
@@ -320,8 +348,8 @@
         lisp-mode
         lisp-interaction-mode
         cider-repl-mode
-        sly-mrepl-mode
-        sly-mode
+        ;; sly-mrepl-mode
+        ;; sly-mode
         racket-mode
         racket-repl-mode
         ielm-mode))
@@ -344,7 +372,8 @@
   :diminish 'yas-minor-mode
   :defer 2
   :config
-  (setq yas-verbosity 2)
+  (setq yas-verbosity 2
+        yas-snippet-dirs (list (expand-file-name "snippets" user-emacs-directory)))
   (yas-global-mode 1))
 
 (use-package yasnippet-snippets :after yasnippet)
@@ -357,11 +386,11 @@
   (setq exec-path-from-shell-check-startup-files nil)
   (exec-path-from-shell-initialize))
 
-;; (use-package ace-jump-mode
-;;   :bind (("C-c SPC" . ace-jump-mode)))
+(use-package ace-jump-mode
+  :bind (("C-c SPC" . ace-jump-mode)))
 
-;; (use-package ace-window
-;;   :bind (("M-p" . ace-window)))
+(use-package ace-window
+  :bind (("M-p" . ace-window)))
 
 (use-package macrostep
   :bind (:map emacs-lisp-mode-map
@@ -373,10 +402,11 @@
   :commands (doct))
 
 (use-package org
-  :ensure org-plus-contrib
+  ;; :ensure org-plus-contrib
+  :ensure nil
   :diminish org-indent-mode
   :functions (org-redisplay-inline-images)
-  :bind (("C-c l" . org-store-link)
+  :bind (;("C-c l" . org-store-link)
          ("C-c c" . org-capture)
          ("C-c a" . org-agenda)
          ("C-c b" . org-switchb))
@@ -462,7 +492,11 @@
         org-babel-results-keyword "results"
         ))
 
+(use-package ox-hugo
+  :after ox)
+
 (use-package yaml-mode
+  :hook ((yaml-mode . highlight-indent-guides-mode))
   :mode "\\.ya?ml\\'")
 
 (use-package hl-line
@@ -476,19 +510,6 @@
   (dired-async-mode 1)
   (async-bytecomp-package-mode 1)
   (setq async-bytecomp-allowed-packages '(all)))
-
-(use-package sly
-  :commands sly
-  :defines sly-mrepl-mode-map
-  :functions (sly-mrepl-mode sly-mrepl-clear-repl sly-simple-completions)
-  :config
-  (if (executable-find "rosconfig")
-      (let ((helper (expand-file-name "~/.roswell/helper.el")))
-        (when (file-exists-p helper) (load helper))))
-  
-  (with-eval-after-load 'sly-mrepl
-    (bind-key "C-c M-O" #'sly-mrepl-clear-repl sly-mrepl-mode-map)
-    (sp-local-pair #'sly-mrepl-mode "'" nil :actions nil)))
 
 (use-package company
   :demand
@@ -566,6 +587,9 @@
 
 (use-package erlang
   :mode ("\\.erl\\'" . erlang-mode)
+  :hook (erlang-mode . (lambda ()
+                         (when (executable-find "erlang_ls")
+                           (lsp))))
   :preface
   (defun erlang-shell/send-C-g ()
     (interactive)
@@ -574,26 +598,9 @@
              (kbd "C-g")))
 
   :bind (:map erlang-shell-mode-map
-         ("C-c C-g" . erlang-shell/send-C-g))
+              ("C-c C-g" . erlang-shell/send-C-g))
+
   :config
-  (use-package edts
-    :defines ac-mode-map
-    :bind (:map ac-mode-map
-           ("C-\\" . auto-complete))
-
-    :diminish auto-complete-mode
-    :diminish auto-highlight-symbol-mode
-    :diminish eproject-mode
-
-    :config
-    (add-hook 'erlang-mode-hook
-              (lambda ()
-                (require 'edts-start)
-                (edts-mode)
-                ;; (auto-complete-mode)
-                ;; (edts-complete-setup)
-                (company-mode 0))))
-
   (let ((man-dir "~/.elpa/edts/doc/20.0"))
     (setq erlang-root-dir man-dir
           edts-man-root   man-dir))
@@ -651,7 +658,12 @@
 
 (use-package python-mode
   :hook (python-mode . flycheck-mode)
-  :mode "\\.py\\(de\\)?\\'")
+  :mode "\\.py\\(de\\)?\\'"
+  :config
+  (setq lsp-pylsp-plugins-pylint-enabled t
+        lsp-pylsp-plugins-pylint-args ["-d" "C"]
+        lsp-pylsp-plugins-flake8-enabled nil
+        lsp-pylsp-plugins-pydocstyle-enabled nil))
 
 ;; (use-package pyenv-mode
 ;;   :hook python-mode
@@ -662,17 +674,18 @@
   :bind (:map python-mode-map
               ("C-c s" . blacken-buffer)))
 
-(use-package tuareg
-  :mode ("\\.ml[iyp]?\\'" . tuareg-mode)
-  :hook (tuareg-mode . flycheck-mode)
-  :bind (:map tuareg-mode-map
-         ("C-c s" . ocamlformat))
-  :custom-face
-  (merlin-type-face ((t (:background "#515151"))))
-  (tuareg-font-double-semicolon-face ((t (:inherit tuareg-font-lock-operator-face))))
-  (tuareg-font-lock-extension-node-face ((t (:inherit 'tuareg-font-lock-attribute-face))))
-  :init (require 'opam-user-setup)
-  :config (require 'ocamlformat))
+;; (use-package tuareg
+;;   :demand nil
+;;   :mode ("\\.ml[iyp]?\\'" . tuareg-mode)
+;;   :hook (tuareg-mode . flycheck-mode)
+;;   :bind (:map tuareg-mode-map
+;;          ("C-c s" . ocamlformat))
+;;   :custom-face
+;;   (merlin-type-face ((t (:background "#515151"))))
+;;   (tuareg-font-double-semicolon-face ((t (:inherit tuareg-font-lock-operator-face))))
+;;   (tuareg-font-lock-extension-node-face ((t (:inherit 'tuareg-font-lock-attribute-face))))
+;;   :init (require 'opam-user-setup)
+;;   :config (require 'ocamlformat))
 
 (use-package reason-mode
   :mode "\\.re\\'"
@@ -763,43 +776,27 @@
   :mode "\\.rs\\'"
   :init (my/add-to-exec-path "~/.cargo/bin"))
 
-(use-package racer
+(use-package rustic
   :after rust-mode
-  :diminish racer-mode
-  :hook ((rust-mode . racer-mode)
-         (rust-mode . eldoc-mode)))
+  :config
+  (setq rustic-lsp-server 'rust-analyzer))
 
-(use-package flycheck-rust
-  :after rust-mode
-  :hook (rust-mode . (lambda ()
-                       (flycheck-mode 1)
-                       (flycheck-rust-setup))))
+;; (use-package rustic
+;;   :functions rustic
+;;   :after rust-mode
+;;   :hook rust-mode)
 
-;; (use-package mmm-mode
-;;   :diminish mmm-mode
-;;   :defer 2
-;;   :commands mmm-mode
-;;   :config
-;;   (mmm-add-classes
-;;    '((jenkinsfile-yaml
-;;       :submode yaml-mode
-;;       :delimiter-mode nil
-;;       :front "yml\\s-*=\\s-*\"\"\""
-;;       :back "\"\"\"")
+;; (use-package racer
+;;   :after rust-mode
+;;   :diminish racer-mode
+;;   :hook ((rust-mode . racer-mode)
+;;          (rust-mode . eldoc-mode)))
 
-;;      (c++-glsl
-;;       :submode glsl-mode
-;;       :front "R\"glsl(\n?"
-;;       :back ")glsl\""
-;;       )))
-
-;;   (add-to-list 'mmm-c-derived-modes 'glsl-mode)
-
-;;   (mmm-add-mode-ext-class 'groovy-mode "jenkinsfile\\'" 'jenkinsfile-yaml)
-;;   (mmm-add-mode-ext-class 'c++-mode nil 'c++-glsl)
-
-;;   (setq mmm-global-mode 'buffers-with-submode-classes
-;;         mmm-submode-decoration-level 2))
+;; (use-package flycheck-rust
+;;   :after rust-mode
+;;   :hook (rust-mode . (lambda ()
+;;                        (flycheck-mode 1)
+;;                        (flycheck-rust-setup))))
 
 (use-package ripgrep
   :if (executable-find "rg")
@@ -813,11 +810,14 @@
 
 (use-package lsp-mode
   :commands lsp
-  ;; :bind (:map c++-mode-map
-  ;;             ("C-c C-l C-s" . lsp))
+  :bind-keymap ("C-c l" . lsp-command-map)
+  :hook ((c-mode . lsp-deferred)
+         (c++-mode . lsp-deferred))
   :config
   (ggtags-mode -1)
-  (setq lsp-enable-on-type-formatting nil
+  (setq read-process-output-max (* 1024 1024)
+        lsp-keymap-prefix "C-c l"
+        lsp-enable-on-type-formatting nil
         lsp-enable-indentation nil))
 
 (use-package lsp-ui
@@ -844,8 +844,12 @@
 (use-package ccls
   :mode "\\.(c(pp|c)?|h(h|pp)?)\\'"
   :config
-  ;; (setq lsp-disabled-clients '(ccls))
+  
+  (setq ccls-initialization-options
+        `(:cache (:directory
+                  ,(expand-file-name "~/.ccls-cache"))))
   (setq ccls-executable "ccls"))
+                 
 
 (use-package sbt-mode
   :commands sbt-start sbt-command
@@ -865,17 +869,10 @@
 (use-package multiple-cursors
   :bind (("C-c m c" . mc/edit-lines)))
 
-;; (use-package unicode-fonts
-;;   :config
-;;   ;; (setq unicode-fonts-block-font-mapping
-;;   ;;       '(("Emoticons"
-;;   ;;          ("Noto Color Emoji" "Symbola" "Quivira")))
-;;   ;;       unicode-fonts-fontset-names '("fontset-default"))
-;;   (unicode-fonts-setup))
-
 (use-package undo-tree
   :diminish undo-tree-mode
   :config
+  (setq undo-tree-auto-save-history nil)
   (global-undo-tree-mode))
 
 ;; (use-package ggtags
@@ -898,63 +895,39 @@
         sqlformat-args '("-s2" "-f2")))
 
 (use-package keychain-environment
-  :demand t
+  :defer 5
   :config (keychain-refresh-environment))
 
-(use-package xterm-color
-  :after eshell
-  :config
-  (add-hook 'eshell-before-prompt-hook
-            (lambda ()
-              (setq xterm-color-preserve-properties t)))
-  (add-to-list 'eshell-preoutput-filter-functions 'xterm-color-filter)
-  (setq eshell-output-filter-functions (remove 'eshell-handle-ansi-color eshell-output-filter-functions))
-
-  (setenv "TERM" "xterm-256color"))
-
-(use-package tramp-theme
-  :demand t
-  :config (load-theme 'tramp))
-
-(use-package fish-completion
-  :config)
-
-;; (use-package paradox
-;;   :defer 1
-;;   :custom
-;;   (paradox-column-width-package 27)
-;;   (paradox-column-width-version 13)
-;;   (paradox-execute-asynchronously t)
-;;   (paradox-hide-wiki-packages t)
-;;   :config
-;;   (paradox-enable))
-
-(use-package elpy
-  :ensure t
-  :defer t
-  :init
-  (advice-add 'python-mode :before 'elpy-enable)
-  :config
-  (setq elpy-modules (delete 'elpy-module-flymake elpy-modules)))
-
-;; (use-package selectrum
-;;   :ensure t
+;; (use-package tramp-theme
 ;;   :demand t
-;;   :bind (:map selectrum-minibuffer-map
-;;               ("C-j"   . selectrum-insert-current-candidate)
-;;               ("C-M-j" . selectrum-submit-exact-input))
-;;   :custom-face
-;;   (selectrum-current-candidate ((t (:background "#515151"))))
-;;   :config
-;;   (selectrum-mode +1)
-;;   (setq projectile-completion-system 'default
-;;         magit-completing-read-function 'selectrum-completing-read))
+;;   :config (load-theme 'tramp))
 
-;; (use-package selectrum-prescient
-;;   :after selectrum
+;; (use-package elpy
+;;   :ensure t
+;;   :defer t
+;;   :init
+;;   (advice-add 'python-mode :before 'elpy-enable)
 ;;   :config
-;;   (selectrum-prescient-mode +1)
-;;   (prescient-persist-mode +1))
+;;   (setq elpy-modules (delete 'elpy-module-flymake elpy-modules)))
+
+(use-package selectrum
+  :ensure t
+  :demand t
+  :bind (:map selectrum-minibuffer-map
+              ("C-j"   . selectrum-insert-current-candidate)
+              ("C-M-j" . selectrum-submit-exact-input))
+  :custom-face
+  (selectrum-current-candidate ((t (:background "#515151"))))
+  :config
+  (selectrum-mode +1)
+  (setq projectile-completion-system 'default
+        magit-completing-read-function 'selectrum-completing-read))
+
+(use-package selectrum-prescient
+  :after selectrum
+  :config
+  (selectrum-prescient-mode +1)
+  (prescient-persist-mode +1))
 
 (use-package gcmh
   :ensure t
@@ -979,5 +952,150 @@
 
 (use-package gemini-mode
   :mode "\\.gmi\\'")
+
+(use-package which-key
+  :diminish which-key-mode
+  :config
+  (which-key-mode))
+
+(use-package marginalia
+  :bind (:map minibuffer-local-map
+              ("C-M-a" . marginalia-cycle))
+  :init
+  (marginalia-mode +1)
+    (advice-add #'marginalia-cycle :after
+              (lambda () (when (bound-and-true-p selectrum-mode) (selectrum-exhibit)))))
+
+(use-package consult
+  :bind (("C-x M-:"  . consult-complex-command)
+         ("C-c h"    . consult-history)
+         ("C-c m"    . consult-mode-command)
+         ("C-x b"    . consult-buffer)
+         ("C-x 4 b"  . consult-buffer-other-window)
+         ("C-x 5 b"  . consult-buffer-other-frame)
+         ("C-x r x"  . consult-register)
+         ("C-x r b"  . consult-bookmark)
+         ("M-g g"    . consult-goto-line)
+         ("M-g M-g"  . consult-goto-line)
+         ("M-g o"    . consult-outline)       ;; "M-s o" is a good alternative.
+         ("M-g l"    . consult-line)          ;; "M-s l" is a good alternative.
+         ("M-g m"    . consult-mark)          ;; I recommend to bind Consult navigation
+         ("M-g k"    . consult-global-mark)   ;; commands under the "M-g" prefix.
+         ("M-g r"    . consult-git-grep)      ;; or consult-grep, consult-ripgrep
+         ("M-g f"    . consult-find)          ;; or consult-locate, my-fdfind
+         ("M-g i"    . consult-project-imenu) ;; or consult-imenu
+         ("M-g e"    . consult-error)
+         ("M-s m"    . consult-multi-occur)
+         ("M-y"      . consult-yank-pop)
+         ("<help> a" . consult-apropos))
+
+  :config
+  (setq consult-narrow-key "<")
+
+  (autoload 'projectile-project-root "projectile")
+  (setq consult-project-root-function #'projectile-project-root))
+
+(use-package consult-selectrum
+  :ensure nil
+  :after selectrum
+  ;; :demand t
+  )
+
+(use-package consult-flycheck
+  :bind (:map flycheck-command-map
+              ("!" . consult-flycheck)))
+
+(use-package mozc
+  :bind (("C-=" . toggle-input-method))
+  :config
+  (require 'mozc-isearch)
+  (setq default-input-method "japanese-mozc")
+  (setq mozc-candidate-style 'overlay))
+
+(use-package dired-filter
+  :after dired
+  :hook ((dired-mode . dired-filter-mode)
+         (dired-mode . dired-filter-group-mode)))
+
+(use-package dired-subtree
+  :after dired
+  :bind (:map dired-mode-map
+              ("C-, ," . dired-subtree-toggle)
+              ("C-, C-," . dired-subtree-toggle)))
+
+(use-package dired-collapse
+  :after dired
+  :bind (:map dired-mode-map
+              ("C-, ." . dired-collapse-mode)
+              ("C-, C-." . dired-collapse-mode))
+  :hook (dired-mode . dired-collapse-mode))
+
+(use-package slime
+  :commands slime
+  :mode (("\\.cl\\'" . lisp-mode))
+  :config
+  (if (executable-find "ros")
+      (let ((helper (expand-file-name "~/.roswell/helper.el")))
+        (when (file-exists-p helper)
+          (load helper))
+        (setq inferior-lisp-program "ros -Q run"))
+    (setq inferior-lisp-program "sbcl"))
+
+  (slime-setup '(slime-fancy slime-company)))
+
+(use-package slime-company
+  :after (slime company)
+  :config
+  (add-to-list 'company-backends 'company-slime)
+  (setq slime-company-completion 'fuzzy
+        slime-company-after-completion 'slime-company-just-one-space))
+
+(use-package csv-mode
+  :mode (("\\.csv\\'" . csv-mode)
+         ("\\.tsv\\'" . tsv-mode))
+  :hook (csv-mode . csv-align-mode)
+  :config
+  (csv-align-mode 1))
+
+(use-package nix-mode
+  :mode "\\.nix\\'")
+
+(use-package avy
+  :bind ("C-'" . avy-goto-char-timer))
+
+(use-package editorconfig
+  :defer 5
+  :diminish editorconfig-mode
+  :config
+  (editorconfig-mode 1))
+
+(use-package caddyfile-mode
+  :mode "Caddyfile'")
+
+(use-package typescript-mode
+  :mode "\\.ts\\'"
+  :hook (typescript-mode . lsp)
+  :config
+  (setq typescript-indent-level 2))
+
+
+(use-package highlight-indent-guides
+  :diminish highlight-indent-guides-mode
+  :hook ((highlight-indent-guides-mode
+          . (lambda ()
+              (setq line-spacing 2))))
+  :config
+  (setq
+   highlight-indent-guides-method 'character
+   highlight-indent-guides-responsive 'top)
+  (set-face-attribute
+   'highlight-indent-guides-character-face nil
+   :inherit 'vertical-border
+   :family "Cascadia Code"
+   :weight 'light)
+  (set-face-attribute
+   'highlight-indent-guides-top-character-face nil
+   :inherit 'highlight-indent-guides-character-face
+   :foreground "grey"))
 
 (provide 'package-config)

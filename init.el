@@ -25,7 +25,7 @@
       package-archives
       '(("gnu"   . "https://elpa.gnu.org/packages/")
         ("melpa" . "https://melpa.org/packages/")
-        ("org"   . "https://orgmode.org/elpa/")))
+        ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
 (package-initialize)
 
 ;; and install needed packages if necessary
@@ -35,8 +35,8 @@
         '(use-package bind-key diminish)))
 
 (require 'sane-defaults)
+(require 'font-setup)
 (require 'my-functions)
 (require 'package-config)
-(require 'mail-config)
 (require 'key-config)
-(require 'macros)
+(require 'my-macros)

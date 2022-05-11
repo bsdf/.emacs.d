@@ -119,12 +119,6 @@
 ;; don't create lockfiles to fuck with syncthing
 (setq create-lockfiles nil)
 
-;; unicode font setup
-;; (when (member "Symbola" (font-family-list))
-;;   (setq use-default-font-for-symbols nil)
-;;   (set-fontset-font t 'unicode "Go Mono")
-;;   (set-fontset-font t 'unicode "Symbola" nil 'append))
-
 ;; compile-command stuff
 (setq compile-command "make"
       compilation-read-command nil)
@@ -133,20 +127,19 @@
   (dolist (x '(source-directory find-function-C-source-directory))
     (set x dir)))
 
-;; 😄 😱 😸 👸 👽 🙋
-(set-fontset-font
- t
- '(#x1f300 . #x1fad0)
- (cond
-  ((member "Noto Color Emoji" (font-family-list)) "Noto Color Emoji")
-  ((member "Noto Emoji" (font-family-list)) "Noto Emoji")
-  ((member "Segoe UI Emoji" (font-family-list)) "Segoe UI Emoji")
-  ((member "Symbola" (font-family-list)) "Symbola")
-  ((member "Apple Color Emoji" (font-family-list)) "Apple Color Emoji")))
-
-
 ;; long line mitigation
 (setq bidi-paragraph-direction 'left-to-right)
 (global-so-long-mode 1)
+
+;; enable pixel-precision scrolling on pgtk emacsen
+(defun my/set-precision-scrolling ()
+  (when (bound-and-true-p pgtk-initialized)
+    (pixel-scroll-precision-mode 1)))
+
+(my/set-precision-scrolling)
+(add-hook 'server-after-make-frame-hook #'my/set-precision-scrolling)
+
+;; annoying
+(blink-cursor-mode 0)
 
 (provide 'sane-defaults)
